@@ -2,27 +2,52 @@ const express = require("express");
 const router = express.Router();
 const db = require("./db");
 
-//get ordered items/cart
-//http://localhost:4000/order_items/
+//curl -X GET "http://localhost:4000/order_items?user_id=14"
 router.get("/", async (req, res) => {
+  const { user_id } = req.query; // Extract user_id from query parameters
+
+  if (!user_id) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
+
   try {
-    const response = await db
+    const [response] = await db
       .promise()
-      .query("SELECT * FROM order_items");
-    res.status(200).json(response[0]);
+      .query(
+        `SELECT oi.id, oi.quantity, oi.price, oi.item_name, oi.menu_id, m.image_url 
+         FROM order_items oi
+         JOIN menu m ON oi.menu_id = m.id
+         WHERE oi.user_id = ?`,
+        [user_id]
+      );
+
+    if (response.length === 0) {
+      return res.status(404).json({ message: "No items found for the user" });
+    }
+
+    res.status(200).json(response);
   } catch (e) {
-    res.status(400).json(e);
+    console.error("Error fetching order items:", e);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-// add item in cart
-//http://localhost:4000/order_items/add-to-cart
+
+
+
+// Add item to cart
+// http://localhost:4000/order_items/add-to-cart
+//curl -X POST http://localhost:4000/order_items/add-to-cart -H "Content-Type: application/json" -d "{\"order_id\":101,\"menu_id\":1,\"quantity\":1,\"user_id\":1}"
+
+
 router.post("/add-to-cart", async (req, res) => {
-  const { order_id, menu_id, quantity } = req.body; // Extract necessary data
+  const { order_id, menu_id, quantity, user_id } = req.body; // Extract necessary data
   try {
+    // Fetch the menu item details
     const [menuItem] = await db
       .promise()
-      .query("SELECT name,price FROM menu WHERE id = ?", [menu_id]);
+      .query("SELECT name, price FROM menu WHERE id = ?", [menu_id]);
 
+    // Check if the menu item exists
     if (menuItem.length === 0) {
       return res.status(404).json({ error: "Menu item not found" });
     }
@@ -30,9 +55,10 @@ router.post("/add-to-cart", async (req, res) => {
     const { name, price } = menuItem[0];
     const total_price = price * quantity;
 
+    // Query to insert or update the item in the order_items table
     const query = `
-      INSERT INTO order_items (order_id,menu_id, quantity, price,item_name)
-      VALUES (?,?, ?, ?,?)
+      INSERT INTO order_items (order_id, menu_id, quantity, price, item_name, user_id)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE 
         quantity = quantity + VALUES(quantity),
         price = VALUES(quantity) * VALUES(price);
@@ -40,7 +66,7 @@ router.post("/add-to-cart", async (req, res) => {
 
     await db
       .promise()
-      .query(query, [order_id, menu_id, quantity, total_price, name]);
+      .query(query, [order_id, menu_id, quantity, total_price, name, user_id]);
 
     res.status(200).json({
       message: "Item added to cart successfully",
@@ -50,6 +76,36 @@ router.post("/add-to-cart", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+//http://localhost:4000/order_items/update-quantity/14
+//curl -X PUT "http://localhost:4000/order_items/update-quantity/14" -H "Content-Type: application/json" -d "{\"quantity\": 5}"
+
+router.put("/update-quantity/:id", async (req, res) => {
+  const { quantity } = req.body;
+  const { id } = req.params;
+
+  if (quantity <= 0) {
+    return res.status(400).json({ error: "Quantity must be greater than 0" });
+  }
+
+  try {
+    
+    const result = await db.promise().query(
+      "UPDATE order_items SET quantity = ? WHERE id = ?",
+      [quantity, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    res.status(200).json({ message: "Quantity updated successfully" });
+  } catch (error) {
+    console.error("Error updating quantity:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 //http://localhost:4000/order_items/remove-item/id
 router.delete("/remove-item/:id", async (req, res) => {
