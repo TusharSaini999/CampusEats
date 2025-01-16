@@ -23,14 +23,11 @@ const Menu = () => {
           ...item,
           image_url: item.image_url || "/images/coffee.png", // Provide a fallback image
         }));
-    
         setMenuItems(menuWithImages); // Update the state with the menu items
       } catch (error) {
         console.error("Error fetching menu items:", error);
       }
     };
-    
-
     fetchMenuItems();
   }, []);
 

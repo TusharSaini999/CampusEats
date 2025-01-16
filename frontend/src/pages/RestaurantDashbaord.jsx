@@ -123,12 +123,6 @@ const RestaurantDashboard = () => {
       setIsSubmitting(false);
     }
   };
-
-  const handleEditClick = (item) => {
-    setEditItem(item);
-    setIsEditing(true);
-  };
-
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
