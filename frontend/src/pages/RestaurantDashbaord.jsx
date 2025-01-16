@@ -144,7 +144,14 @@ const RestaurantDashboard = () => {
       });
       alert("Menu item updated successfully!");
       setIsEditing(false);
-      fetchOurMenu();
+      setVendorId("");
+      setName("");
+      setDescription("");
+      setPrice("");
+      setCategory("");
+      setAvailability("");
+      setImageUrl("");
+      await fetchOurMenu();
     } catch (error) {
       console.log(editItem);
       console.error("Error updating menu item:", error);

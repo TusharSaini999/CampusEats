@@ -89,7 +89,27 @@ router.put("/update-quantity/:id", async (req, res) => {
   }
 
   try {
-    
+    // First, fetch the menu_id from the order_items table using the id
+    const [orderItemRows] = await db.promise().query(
+      "SELECT menu_id FROM order_items WHERE id = ?",
+      [id]
+    );
+
+    // Check if the order item exists
+    if (orderItemRows.length === 0) {
+      return res.status(404).json({ error: "Order item not found" });
+    }
+
+    const menuId = orderItemRows[0].menu_id; // Get the menu_id from the result
+
+    // Now, check if the requested quantity is available in the menu using the menu_id
+    const isQuantityAvailable = await checkAvailabilityInMenu(menuId, quantity);
+
+    if (!isQuantityAvailable) {
+      return res.status(400).json({ error: "Requested quantity exceeds availability" });
+    }
+
+    // Update the quantity in the order_items table if valid
     const result = await db.promise().query(
       "UPDATE order_items SET quantity = ? WHERE id = ?",
       [quantity, id]
@@ -105,6 +125,25 @@ router.put("/update-quantity/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Function to check if the requested quantity is available in the menu
+async function checkAvailabilityInMenu(menuId, requestedQuantity) {
+  // Query to get the availability of the menu item based on the menuId
+  const [menuRows] = await db.promise().query(
+    "SELECT availability FROM menu WHERE id = ?",
+    [menuId]
+  );
+
+  // If no menu item is found, return false
+  if (menuRows.length === 0) {
+    return false;
+  }
+
+  const availability = menuRows[0].availability;
+
+  // Return true if the requested quantity is available, otherwise false
+  return availability >= requestedQuantity;
+}
 
 
 //http://localhost:4000/order_items/remove-item/id

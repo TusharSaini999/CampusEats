@@ -57,6 +57,15 @@ const Cart = () => {
         body: JSON.stringify({ quantity: newQuantity }), // Send the new quantity
       });
   
+      const data = await response.json();
+  
+      // Check if the response indicates that the quantity exceeds the available stock
+      if (response.status === 400 && data.error) {
+        // Show an alert if the requested quantity exceeds availability
+        alert(data.error);  // Example: "Requested quantity exceeds availability"
+        return; // Prevent further actions if there's an error
+      }
+  
       if (!response.ok) {
         throw new Error("Failed to update quantity");
       }
@@ -82,6 +91,7 @@ const Cart = () => {
       console.error("Error updating quantity:", error);
     }
   };
+  
   
   const handleRemoveItem = async (id) => {
     try {
