@@ -34,13 +34,17 @@ const RestaurantDashboard = () => {
     if (!vendor_id) return;
     try {
       const response = await axios.get(
-        `http://localhost:4000/menu/${vendor_id}`
+        `http://localhost:4000/menu/vend`, 
+        {
+          params: { vendor_id: vendor_id } // Add query parameters here
+        }
       );
       setMenu(response.data);
     } catch (error) {
       console.error("Error fetching menu:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchOurMenu();
@@ -79,27 +83,25 @@ const RestaurantDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !description || !price || !category) {
+    if (!name || !description || !price || !category || !image_url) {
       console.error("Please fill all the fields");
       return;
     }
 
     setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append('vendor_id', vendor_id);
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('price', price);
+    formData.append('category', category);
+    formData.append('availability', availability);
+    formData.append('image_url', image_url); // image file is included here
+
     try {
       const response = await fetch("http://localhost:4000/menu/post-menu", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          vendor_id,
-          name,
-          description,
-          price,
-          category,
-          image_url,
-          availability,
-        }),
+        body: formData,
       });
 
       if (response.ok) {
@@ -164,13 +166,13 @@ const RestaurantDashboard = () => {
         console.log("No token found!");
         return;
       }
-  
+
       try {
         const response = await axios.get(
           "http://localhost:4000/users/profile",
           {
             headers: {
-              Authorization:token,
+              Authorization: token,
             },
           }
         );
@@ -179,10 +181,10 @@ const RestaurantDashboard = () => {
         console.error("Error fetching profile data:", err.message);
       }
     };
-  
+
     if (token) fetchData();
   }, [token]);
-  
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
@@ -241,9 +243,8 @@ const RestaurantDashboard = () => {
               <FaBell />
             </button>
             <button
-              className={`text-white px-4 py-2 rounded-lg ${
-                isOnline ? "bg-green-500" : "bg-red-500"
-              }`}
+              className={`text-white px-4 py-2 rounded-lg ${isOnline ? "bg-green-500" : "bg-red-500"
+                }`}
               onClick={toggleOnlineStatus}
             >
               {isOnline ? "Online" : "Offline"}
@@ -405,9 +406,10 @@ const RestaurantDashboard = () => {
                     <label className="block text-sm font-medium">Image</label>
                     <input
                       type="file"
-                      onChange={(e) => setImageUrl(e.target.files)}
+                      onChange={(e) => setImageUrl(e.target.files[0])} // store the file in state
                       className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                     />
+
                   </div>
                   <div className="flex justify-end">
                     <button
@@ -420,9 +422,8 @@ const RestaurantDashboard = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${
-                        isSubmitting ? "opacity-50" : ""
-                      }`}
+                      className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${isSubmitting ? "opacity-50" : ""
+                        }`}
                     >
                       {isSubmitting ? "Submitting..." : "Submit"}
                     </button>

@@ -24,20 +24,6 @@ router.get("/:id", async (req, res) => {
   } catch (e) {
     res.status(400).json(e);
   }
-});
-//post menu
-////http://localhost:4000/menu/post-menu
-router.post("/post-menu", async (req, res) => {
-  const {
-    vendor_id,
-    name,
-    description,
-    price,
-    category,
-    image_url,
-    availability,
-    created_at,
-  } = req.body;
 
   try {
     // Use parameterized queries to prevent SQL injection

@@ -8,20 +8,31 @@ const Cart = () => {
   const [isCouponModalOpen, setCouponModalOpen] = useState(false);
   const [isShippingModalOpen, setShippingModalOpen] = useState(false);
   const [isCheckoutModalOpen, setCheckoutModalOpen] = useState(false);
-
+  const [userId, setUserId] = useState("");
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
     exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
   };
+  useEffect(()=>{
+    const storedUserId = localStorage.getItem("id");
+    setUserId(storedUserId || "");
+  });
 
   useEffect(() => {
+    
     const fetchCartItems = async () => {
       try {
-        const response = await fetch("http://localhost:4000/order_items/");
+        const user_id = userId;
+  
+        const response = await fetch(`http://localhost:4000/order_items?user_id=${user_id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch cart items");
+        }
+  
         const data = await response.json();
         setCartItems(data);
-
+  
         const total = data.reduce(
           (sum, item) => sum + item.price * item.quantity,
           0
@@ -31,27 +42,47 @@ const Cart = () => {
         console.error("Error fetching cart data:", error);
       }
     };
-
+  
     fetchCartItems();
-  }, []);
+  }, [userId]);
 
-  const handleQuantityChange = (id, newQuantity) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-
-    setSubtotal(
-      cartItems.reduce(
-        (sum, item) =>
-          item.id === id
-            ? sum + item.price * newQuantity
-            : sum + item.price * item.quantity,
-        0
-      )
-    );
+  const handleQuantityChange = async (id, newQuantity) => {
+    try {
+      // Update the quantity in the database
+      const response = await fetch(`http://localhost:4000/order_items/update-quantity/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ quantity: newQuantity }), // Send the new quantity
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update quantity");
+      }
+  
+      // If successful, update the local state
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
+  
+      // Recalculate the subtotal after updating quantity
+      setSubtotal(
+        cartItems.reduce(
+          (sum, item) =>
+            item.id === id
+              ? sum + item.price * newQuantity
+              : sum + item.price * item.quantity,
+          0
+        )
+      );
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
   };
+  
   const handleRemoveItem = async (id) => {
     try {
       await fetch(`http://localhost:4000/order_items/remove-item/${id}`, {
@@ -87,8 +118,9 @@ const Cart = () => {
               className="flex items-center justify-between border-b pb-4"
             >
               <div className="flex items-center space-x-4">
+              
                 <img
-                  src={item.image || "https://via.placeholder.com/100"}
+                  src={item.image_url || "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"}
                   alt={item.name}
                   className="w-20 h-20 object-cover"
                 />

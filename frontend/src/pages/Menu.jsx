@@ -1,49 +1,60 @@
 import React, { useState, useEffect } from "react";
-import img1 from "../assets/1.jpg";
-import img2 from "../assets/2.jpg";
-import img3 from "../assets/3.jpg";
-import img4 from "../assets/4.jpg";
-import img5 from "../assets/5.jpg";
+
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [userType, setUserType] = useState("");
   const [cart, setCart] = useState([]);
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const storedUserType = localStorage.getItem("userType");
     setUserType(storedUserType);
+    const storedUserId = localStorage.getItem("id");
+    setUserId(storedUserId || "");
 
     const fetchMenuItems = async () => {
       try {
         const response = await fetch("http://localhost:4000/menu/");
         const data = await response.json();
-
-        const images = [img1, img2, img3, img4, img5];
-        const menuWithImages = data.map((item, index) => ({
+    
+        // For items with empty image URLs, assign a default image or use a fallback URL
+        const menuWithImages = data.map((item) => ({
           ...item,
-          image: images[index % images.length],
+          image_url: item.image_url || "/images/coffee.png", // Provide a fallback image
         }));
-
-        setMenuItems(menuWithImages);
+    
+        setMenuItems(menuWithImages); // Update the state with the menu items
       } catch (error) {
         console.error("Error fetching menu items:", error);
       }
     };
+    
 
     fetchMenuItems();
   }, []);
 
   const handleAddToCart = async (menu_id) => {
-    const order_id = Date.now(); 
-    const quantity = 1; 
+    const order_id = Date.now(); // Generate a unique order ID
+    const quantity = 1;
+
+    // Assume currentUser contains the logged-in user's data, including user_id
+    const user_id = userId;
+
+    if (!user_id) {
+      alert("User not logged in.");
+      return;
+    }
 
     const selectedItem = menuItems.find((item) => item.id === menu_id);
-    if (!selectedItem) return;
+    if (!selectedItem) {
+      alert("Item not found.");
+      return;
+    }
 
     const price = selectedItem.price;
 
-    const cartItem = { order_id, menu_id, quantity, price };
+    const cartItem = { order_id, menu_id, quantity, price, user_id };
 
     try {
       const response = await fetch("http://localhost:4000/order_items/add-to-cart", {
@@ -62,7 +73,7 @@ const Menu = () => {
       console.error("Error adding to cart:", error);
     }
   };
-
+console.log(menuItems);
   return (
     <div className="bg-gray-50 min-h-screen py-10 px-4">
       <div className="max-w-6xl mx-auto">
@@ -75,7 +86,7 @@ const Menu = () => {
             >
               {/* Display Image */}
               <img
-                src={item.image}
+                src={item.image_url}
                 alt={item.name}
                 className="w-full h-36 object-cover"
               />
