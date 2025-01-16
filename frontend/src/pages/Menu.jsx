@@ -10,14 +10,15 @@ const Menu = () => {
   useEffect(() => {
     const storedUserType = localStorage.getItem("userType");
     setUserType(storedUserType);
+  
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
-
+  
     const fetchMenuItems = async () => {
       try {
         const response = await fetch("http://localhost:4000/menu/");
         const data = await response.json();
-    
+  
         // For items with empty image URLs, assign a default image or use a fallback URL
         const menuWithImages = data.map((item) => ({
           ...item,
@@ -30,6 +31,7 @@ const Menu = () => {
     };
     fetchMenuItems();
   }, []);
+  
 
   const handleAddToCart = async (menu_id) => {
     const order_id = Date.now(); // Generate a unique order ID

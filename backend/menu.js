@@ -75,7 +75,7 @@ router.post('/post-menu', upload, async (req, res) => {
 //http://localhost:4000/menu/
 router.get("/", async (req, res) => {
   try {
-    const response = await db.promise().query(`SELECT * FROM menu`);
+    const response = await db.promise().query(`SELECT * FROM menu where availability>0`);
     res.status(200).json(response[0]);
   } catch (e) {
     res.status(400).json(e);
