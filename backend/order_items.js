@@ -4,7 +4,7 @@ const db = require("./db");
 
 //curl -X GET "http://localhost:4000/order_items?user_id=14"
 router.get("/", async (req, res) => {
-  const { user_id } = req.query; // Extract user_id from query parameters
+  const { user_id } = req.query;
 
   if (!user_id) {
     return res.status(400).json({ error: "User ID is required" });
@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
         `SELECT oi.id, oi.quantity, oi.price, oi.item_name, oi.menu_id, m.image_url 
          FROM order_items oi
          JOIN menu m ON oi.menu_id = m.id
-         WHERE oi.user_id = ?`,
+         WHERE oi.user_id = ? AND oi.o_id IS NULL`,
         [user_id]
       );
 
@@ -26,11 +26,12 @@ router.get("/", async (req, res) => {
     }
 
     res.status(200).json(response);
-  } catch (e) {
-    console.error("Error fetching order items:", e);
+  } catch (error) {
+    console.error("Error fetching order items:", error.message || error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 
 
