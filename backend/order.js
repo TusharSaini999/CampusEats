@@ -27,7 +27,7 @@ router.post("/create-order", async (req, res) => {
   }
 
   try {
-    // First, check if there are any order items with o_id IS NULL for the given user_id
+
     const [orderItemsCheck] = await db
       .promise()
       .query(
@@ -35,7 +35,7 @@ router.post("/create-order", async (req, res) => {
         [user_id]
       );
 
-    // If no order items are found, return an error message
+
     if (orderItemsCheck.length === 0) {
       return res.status(404).json({ message: "No order items found to update" });
     }
@@ -63,7 +63,7 @@ router.post("/create-order", async (req, res) => {
       return res.status(404).json({ message: "No order items found to update" });
     }
 
-    // Respond with the order creation success message and the new order's ID
+  
     res.status(201).json({ message: "Order created successfully", order_id: orderId });
 
   } catch (error) {
@@ -72,4 +72,56 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
+//total price
+//http://localhost:4000/orders/total-price
+// Use POST to handle the request
+router.post("/total-price", async (req, res) => {
+  const userId = req.body.user_id; 
+
+  if (!userId) {
+    return res.status(400).json({ error: "User not authenticated" });
+  }
+
+  try {
+
+    const [result] = await db.promise().query(
+      `SELECT SUM(price * quantity) AS total_price 
+       FROM order_items 
+       WHERE user_id = ? && o_id is NULL`,
+      [userId]
+    );
+
+    if (!result[0].total_price) {
+      return res.status(404).json({ message: "No order items found for this user" });
+    }
+
+    res.status(200).json({
+      message: "Total price fetched successfully",
+      total_price: result[0].total_price,
+    });
+  } catch (error) {
+    console.error("Error fetching total price:", error.message || error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Example Node.js/Express route
+//http://localhost:4000/orders/history
+router.post("/history", async (req, res) => {
+  const { user_id } = req.body;
+  
+  try {
+    // Query the orders table to get orders based on the user_id
+    const [orders] = await db.promise().query("SELECT * FROM orders WHERE user_id = ?", [user_id]);
+    
+    if (orders.length === 0) {
+      return res.status(404).json({ error: "No orders found for this user." });
+    }
+
+    res.json({ orders });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching order history." });
+  }
+});
 module.exports = router;

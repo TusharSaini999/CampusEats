@@ -13,6 +13,7 @@ import RecipeGenerator from "./pages/RecipeGenerator";
 import DeliveryboyDashboard from "./pages/DeliveryboyDashboard";
 import PaymentConfirmation from "./pages/PaymentConfirmation";
 import SearchResults from "./pages/SearchResults";
+import OrderHistory from "./pages/order-histery";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/delivery-boy-dashboard" element={<DeliveryboyDashboard />}/>
           <Route path="/confirm-order" element={<PaymentConfirmation />} />
           <Route path="/search-results" element={<SearchResults />} />
+          <Route path="/order-history" element={<OrderHistory />} />
         </Routes>
       </Router>
     </>

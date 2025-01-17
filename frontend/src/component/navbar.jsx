@@ -100,6 +100,9 @@ const Navbar = () => {
                 <Link to="/cart" className="hover:text-purple-700">
                   Cart
                 </Link>
+                <Link to="/order-history" className="hover:text-purple-700">
+                  Order History
+                </Link>
                 
               </>
             )}
