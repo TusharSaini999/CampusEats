@@ -22,7 +22,6 @@ router.get("/", async (req, res) => {
 router.post("/create-order", async (req, res) => {
   const { user_id, total_price, delivery_address, customer_latitude, customer_longitude, payment_status } = req.body;
 
-  // Check for missing fields
   if (!user_id || !total_price || !delivery_address || payment_status === undefined) {
     return res.status(400).json({ error: "Missing required fields" });
   }
@@ -41,7 +40,6 @@ router.post("/create-order", async (req, res) => {
       return res.status(404).json({ message: "No order items found to update" });
     }
 
-    // If order items exist, proceed with inserting the new order
     const [orderResult] = await db
       .promise()
       .query(
@@ -52,7 +50,6 @@ router.post("/create-order", async (req, res) => {
 
     const orderId = orderResult.insertId;
 
-    // Now, update the order_items table with the new order's ID (o_id)
     const [updateResult] = await db
       .promise()
       .query(
@@ -62,7 +59,6 @@ router.post("/create-order", async (req, res) => {
         [orderId, user_id]
       );
 
-    // Check if any rows were updated in order_items
     if (updateResult.affectedRows === 0) {
       return res.status(404).json({ message: "No order items found to update" });
     }
