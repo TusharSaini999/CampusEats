@@ -42,7 +42,8 @@ const PaymentConfirmation = () => {
         });
 
         if (response.data.total_price) {
-          setTotalPrice(response.data.total_price);
+          const updatedTotalPrice = parseFloat(response.data.total_price) + 40;
+          setTotalPrice(updatedTotalPrice);
         } else {
           setError("No order items found.");
         }
@@ -221,7 +222,7 @@ const PaymentConfirmation = () => {
 
         {/* Modal Confirmation */}
         {isModalVisible && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style={{ zIndex: 1050 }}>
             <div className="bg-white p-8 rounded-lg shadow-md text-center w-96">
               <div className="flex justify-center mb-4">
                 <svg
@@ -261,12 +262,6 @@ const PaymentConfirmation = () => {
                   className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded hover:bg-gray-300"
                 >
                   View Order History
-                </button>
-                <button
-                  onClick={() => setIsModalVisible(false)}
-                  className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-                >
-                  Close
                 </button>
               </div>
             </div>

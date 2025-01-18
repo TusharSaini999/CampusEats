@@ -90,5 +90,57 @@ router.delete("/vendor-profile-delete/:id", async (req, res) => {
     });
   }
 });
+//update vendor current 1 online and 0 offline
+//http://localhost:4000/vendors/update-vendor-status
+//curl -X POST http://localhost:4000/vendors/update-vendor-status -H "Content-Type: application/json" -d "{\"vendorId\":1,\"current\":1}"
+
+router.post('/update-vendor-status', (req, res) => {
+  const { vendorId, current } = req.body;
+
+  // Validate input
+  if (typeof vendorId === 'undefined' || typeof current === 'undefined') {
+    return res.status(400).json({ error: 'vendorId and current are required.' });
+  }
+
+  // SQL query to update the current status
+  const sql = 'UPDATE vendors SET current = ? WHERE id = ?';
+
+  db.query(sql, [current, vendorId], (err, result) => {
+    if (err) {
+      console.error('Error updating vendor status:', err);
+      return res.status(500).json({ error: 'Database error.' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Vendor not found.' });
+    }
+
+    res.status(200).json({ message: 'Vendor status updated successfully.' });
+  });
+});
+
+
+// Express endpoint to get vendor status
+router.get('/vendor-status/:vendorId', (req, res) => {
+  const { vendorId } = req.params;
+
+  // SQL query to get the current status of the vendor
+  const sql = 'SELECT current FROM vendors WHERE id = ?';
+
+  db.query(sql, [vendorId], (err, result) => {
+    if (err) {
+      console.error('Error fetching vendor status:', err);
+      return res.status(500).json({ error: 'Database error.' });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Vendor not found.' });
+    }
+
+    // Return the current status of the vendor
+    res.status(200).json({ current: result[0].current });
+  });
+});
+
 
 module.exports = router;

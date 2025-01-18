@@ -23,6 +23,59 @@ const RestaurantDashboard = () => {
   const [profileData, setProfileData] = useState([]);
   const token = localStorage.getItem("token");
 
+  // Fetch the vendor status from the database on component mount or after login
+  useEffect(() => {
+    const fetchVendorStatus = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/vendors/vendor-status/${vendor_id}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setIsOnline(data.current === 1);
+        } else {
+          console.error("Error fetching vendor status:", data.error);
+          setIsOnline(false);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setIsOnline(false);
+      }
+    };
+
+    fetchVendorStatus();
+  }, [vendor_id]);
+
+  
+
+
+  const toggleOnlineStatus = async () => {
+    const newStatus = isOnline ? 0 : 1; 
+    try {
+      const response = await fetch("http://localhost:4000/vendors/update-vendor-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          vendorId: vendor_id,
+          current: newStatus,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        
+        setIsOnline(!isOnline);
+      } else {
+        console.error("Error updating status:", data.error);
+        alert("Failed to update vendor status. Try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred while updating the status.");
+    }
+  }
   useEffect(() => {
     if (token) {
       const decodedToken = jwtDecode(token);
@@ -36,7 +89,7 @@ const RestaurantDashboard = () => {
       const response = await axios.get(
         `http://localhost:4000/menu/vend`,
         {
-          params: { vendor_id: vendor_id } // Add query parameters here
+          params: { vendor_id: vendor_id }
         }
       );
       setMenu(response.data);
@@ -91,8 +144,7 @@ const RestaurantDashboard = () => {
     formData.append('price', price);
     formData.append('category', category);
     formData.append('availability', availability);
-    formData.append('image_url', image_url); // image file is included here
-
+    formData.append('image_url', image_url); 
     try {
       const response = await fetch("http://localhost:4000/menu/post-menu", {
         method: "POST",
@@ -312,10 +364,10 @@ const RestaurantDashboard = () => {
                     >
                       <td className="p-4">{order.id}</td>
                       <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.total_price}</td>
+                      <td className="p-4">{order.total_price}Rs</td>
                       <td className="p-4">{order.status}</td>
                       <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">${order.payment_status}</td>
+                      <td className="p-4">{order.payment_status}</td>
                       <td className="p-4">
                         <button className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105">
                           View

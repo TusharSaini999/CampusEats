@@ -15,15 +15,13 @@ const OrderHistory = () => {
     }
   }, []);
 
-  
   const fetchOrderHistory = async (userId) => {
     try {
       const response = await axios.post("http://localhost:4000/orders/history", {
         user_id: userId,
       });
 
-  
-      console.log(response.data); 
+      console.log(response.data);
 
       if (response.data.orders) {
         setOrders(response.data.orders);
@@ -46,52 +44,62 @@ const OrderHistory = () => {
         {/* Order List */}
         {orders.length > 0 ? (
           <div className="space-y-4">
-            {orders.map((order) => (
-              <div
-                key={order.order_id}
-                className="flex flex-col sm:flex-row bg-gray-100 p-4 rounded-lg shadow-sm"
-              >
-                <div className="flex-1">
-                  {/* Order ID */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                    <h3 className="font-semibold text-gray-700">Order ID:</h3>
-                    <p className="text-gray-600">{order.id}</p>
-                  </div>
+            {orders.map((order) => {
+              const orderDate = new Date(order.created_at);
+              const date = orderDate.toLocaleDateString(); // Extract date
+              const time = orderDate.toLocaleTimeString(); // Extract time
 
-                  {/* Date */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                    <h3 className="font-semibold text-gray-700">Date:</h3>
-                    <p className="text-gray-600">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
+              return (
+                <div
+                  key={order.order_id}
+                  className="flex flex-col sm:flex-row bg-gray-100 p-4 rounded-lg shadow-sm"
+                >
+                  <div className="flex-1">
+                    {/* Order ID */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Order ID:</h3>
+                      <p className="text-gray-600">{order.id}</p>
+                    </div>
 
-                  {/* Total Price */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                    <h3 className="font-semibold text-gray-700">Total Price:</h3>
-                    <p className="text-gray-600">Rs{order.total_price}</p>
-                  </div>
+                    {/* Date */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Date:</h3>
+                      <p className="text-gray-600">{date}</p>
+                    </div>
 
-                  {/* Payment Status */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                    <h3 className="font-semibold text-gray-700">Payment Status:</h3>
-                    <p className="text-gray-600">{order.payment_status}</p>
-                  </div>
+                    {/* Time */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Time:</h3>
+                      <p className="text-gray-600">{time}</p>
+                    </div>
 
-                  {/* Delivery Address */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                    <h3 className="font-semibold text-gray-700">Delivery Address:</h3>
-                    <p className="text-gray-600">{order.delivery_address}</p> {/* Add address field */}
-                  </div>
+                    {/* Total Price */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Total Price:</h3>
+                      <p className="text-gray-600">Rs{order.total_price}</p>
+                    </div>
 
-                  {/* Delivery Status */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                    <h3 className="font-semibold text-gray-700">Status:</h3>
-                    <p className="text-gray-600">{order.status}</p> {/* Add delivery status field */}
+                    {/* Payment Status */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Payment Status:</h3>
+                      <p className="text-gray-600">{order.payment_status}</p>
+                    </div>
+
+                    {/* Delivery Address */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Delivery Address:</h3>
+                      <p className="text-gray-600">{order.delivery_address}</p>
+                    </div>
+
+                    {/* Delivery Status */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700">Status:</h3>
+                      <p className="text-gray-600">{order.status}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p>No orders found.</p>

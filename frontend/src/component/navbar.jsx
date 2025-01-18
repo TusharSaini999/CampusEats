@@ -9,7 +9,7 @@ const Navbar = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchQuery, setSearchQuery]=useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -21,7 +21,38 @@ const Navbar = () => {
     setUserId(storedUserId || "");
   }, [location]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+   /* if (userType === "vendor") {
+      const newStatus = 0; // Always set to 0 (offline)
+  
+      try {
+        const response = await fetch("http://localhost:4000/vendors/update-vendor-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            vendorId: userId, // Pass the vendorId
+            current: newStatus, // Set status to 0 (offline)
+          }),
+        });
+  
+        const data = await response.json(); // Await the response
+  
+        if (response.ok) {
+          // The status is updated to offline, you can perform additional actions here
+          console.log("Vendor status updated to offline.");
+        } else {
+          console.error("Error updating status:", data.error);
+          alert("Failed to update vendor status. Try again.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while updating the status.");
+      }
+    }
+  */
+    // Perform logout actions
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
     localStorage.removeItem("id");
@@ -30,6 +61,7 @@ const Navbar = () => {
     navigate("/login");
     window.location.reload();
   };
+  
 
   const closeModal = () => {
     setIsLogoutModalOpen(false);
@@ -103,7 +135,7 @@ const Navbar = () => {
                 <Link to="/order-history" className="hover:text-purple-700">
                   Order History
                 </Link>
-                
+
               </>
             )}
             {userType === "user" && (

@@ -27,19 +27,16 @@ router.post("/create-order", async (req, res) => {
   }
 
   try {
-
+    // Check for pending order items
     const [orderItemsCheck] = await db
       .promise()
-      .query(
-        `SELECT * FROM order_items WHERE user_id = ? AND o_id IS NULL`,
-        [user_id]
-      );
-
+      .query(`SELECT * FROM order_items WHERE user_id = ? AND o_id IS NULL`, [user_id]);
 
     if (orderItemsCheck.length === 0) {
       return res.status(404).json({ message: "No order items found to update" });
     }
 
+    // Insert into orders table
     const [orderResult] = await db
       .promise()
       .query(
@@ -50,6 +47,7 @@ router.post("/create-order", async (req, res) => {
 
     const orderId = orderResult.insertId;
 
+    // Update order_items with the new order ID
     const [updateResult] = await db
       .promise()
       .query(
@@ -63,7 +61,26 @@ router.post("/create-order", async (req, res) => {
       return res.status(404).json({ message: "No order items found to update" });
     }
 
-  
+    // Fetch all ordered items to update menu availability
+    const [orderedItems] = await db
+      .promise()
+      .query(
+        `SELECT menu_id, quantity FROM order_items WHERE o_id = ?`,
+        [orderId]
+      );
+
+    for (const item of orderedItems) {
+      const { menu_id, quantity } = item;
+
+      // Decrease availability in the menu table
+      const [menuUpdateResult] = await db
+        .promise()
+        .query(
+          `UPDATE menu SET availability = availability - ? WHERE id = ? AND availability >= ?`,
+          [quantity, menu_id, quantity]
+        );
+    }
+
     res.status(201).json({ message: "Order created successfully", order_id: orderId });
 
   } catch (error) {
@@ -71,6 +88,7 @@ router.post("/create-order", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 //total price
 //http://localhost:4000/orders/total-price

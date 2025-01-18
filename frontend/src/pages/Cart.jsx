@@ -14,25 +14,27 @@ const Cart = () => {
     visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
     exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
   };
-  useEffect(()=>{
+
+  useEffect(() => {
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
   });
 
   useEffect(() => {
-    
     const fetchCartItems = async () => {
       try {
         const user_id = userId;
-  
-        const response = await fetch(`http://localhost:4000/order_items?user_id=${user_id}`);
+
+        const response = await fetch(
+          `http://localhost:4000/order_items?user_id=${user_id}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch cart items");
         }
-  
+
         const data = await response.json();
         setCartItems(data);
-  
+
         const total = data.reduce(
           (sum, item) => sum + item.price * item.quantity,
           0
@@ -42,42 +44,40 @@ const Cart = () => {
         console.error("Error fetching cart data:", error);
       }
     };
-  
+
     fetchCartItems();
   }, [userId]);
 
   const handleQuantityChange = async (id, newQuantity) => {
     try {
-      // Update the quantity in the database
-      const response = await fetch(`http://localhost:4000/order_items/update-quantity/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ quantity: newQuantity }), // Send the new quantity
-      });
-  
+      const response = await fetch(
+        `http://localhost:4000/order_items/update-quantity/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ quantity: newQuantity }),
+        }
+      );
+
       const data = await response.json();
-  
-      // Check if the response indicates that the quantity exceeds the available stock
+
       if (response.status === 400 && data.error) {
-        // Show an alert if the requested quantity exceeds availability
-        alert(data.error);  // Example: "Requested quantity exceeds availability"
-        return; // Prevent further actions if there's an error
+        alert(data.error);
+        return;
       }
-  
+
       if (!response.ok) {
         throw new Error("Failed to update quantity");
       }
-  
-      // If successful, update the local state
+
       setCartItems((prevItems) =>
         prevItems.map((item) =>
           item.id === id ? { ...item, quantity: newQuantity } : item
         )
       );
-  
-      // Recalculate the subtotal after updating quantity
+
       setSubtotal(
         cartItems.reduce(
           (sum, item) =>
@@ -91,8 +91,7 @@ const Cart = () => {
       console.error("Error updating quantity:", error);
     }
   };
-  
-  
+
   const handleRemoveItem = async (id) => {
     try {
       await fetch(`http://localhost:4000/order_items/remove-item/${id}`, {
@@ -121,47 +120,54 @@ const Cart = () => {
         <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>
 
         {/* Dynamically Render Cart Items */}
-        <div className="space-y-6">
-          {cartItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between border-b pb-4"
-            >
-              <div className="flex items-center space-x-4">
-              
-                <img
-                  src={item.image_url || "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"}
-                  alt={item.name}
-                  className="w-20 h-20 object-cover"
-                />
-                <div>
-                  <p className="font-semibold">{item.item_name}</p>
+        {cartItems.length === 0 ? (
+          <p className="text-lg text-center font-semibold text-red-600">
+            Your cart is empty! Please add items to your cart from the menu.
+          </p>
+        ) : (
+          <div className="space-y-6">
+            {cartItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between border-b pb-4"
+              >
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={
+                      item.image_url ||
+                      "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                    }
+                    alt={item.name}
+                    className="w-20 h-20 object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold">{item.item_name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.quantity}
+                    onChange={(e) =>
+                      handleQuantityChange(item.id, +e.target.value)
+                    }
+                    className="w-16 border rounded text-center"
+                  />
+                  <p className="font-semibold">
+                    &#8377;{(item.price * item.quantity).toFixed(2)}
+                  </p>
+                  <button
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-900 mt-4"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(item.id, +e.target.value)
-                  }
-                  className="w-16 border rounded text-center"
-                />
-                <p className="font-semibold">
-                  &#8377;{(item.price * item.quantity).toFixed(2)}
-                </p>
-                <button
-                  onClick={() => handleRemoveItem(item.id)}
-                  className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-900 mt-4"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Cart Totals Section */}
@@ -174,27 +180,24 @@ const Cart = () => {
             <p className="font-semibold">&#8377;{subtotal.toFixed(2)}</p>
           </div>
 
-          {/* Shipping Options */}
           <div>
             <p className="font-semibold mb-2">Shipping</p>
             <div className="space-y-2">
               <label className="flex items-center space-x-2">
-                <input type="radio" name="shipping" />
-                <span>Flat rate: &#8377;10.00</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input type="radio" name="shipping" />
-                <span>Pickup: &#8377;15.00</span>
+                <span>Pickup Delivery Cost: &#8377;40.00</span>
               </label>
             </div>
           </div>
 
           <div className="flex justify-between border-t pt-4">
             <p>Total</p>
-            <p className="font-bold">&#8377;{(subtotal + 10).toFixed(2)}</p>
+            <p className="font-bold">&#8377;{(subtotal + 40).toFixed(2)}</p>
           </div>
           <Link to="/confirm-order">
-            <button className="w-full bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 mt-4">
+            <button
+              className="w-full bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 mt-4"
+              disabled={cartItems.length === 0} // Disable button if cart is empty
+            >
               Proceed to Checkout
             </button>
           </Link>
