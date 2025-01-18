@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 const SearchResults = () => {
+  const [userId, setUserId] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,7 +13,10 @@ const SearchResults = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const searchQuery = queryParams.get("query");
-
+ useEffect(() => {
+    const storedUserId = localStorage.getItem("id");
+    setUserId(storedUserId || "");
+  });
   useEffect(() => {
     const fetchData = async () => {
       if (!searchQuery) {
@@ -27,15 +31,7 @@ const SearchResults = () => {
         const response = await axios.get(
           `http://localhost:4000/menu/search-menu/${searchQuery}`
         );
-
-        // Assigning images from local assets cyclically
-        const images = [img1, img2, img3, img4, img5];
-        const dataWithImages = response.data.map((item, index) => ({
-          ...item,
-          imageUrl: images[index % images.length],
-        }));
-
-        setResults(dataWithImages);
+        setResults(response.data);
       } catch (err) {
         console.log(searchQuery);
         setError("Failed to fetch results. Please try again.");
@@ -48,16 +44,24 @@ const SearchResults = () => {
   }, [searchQuery]);
 
   const handleAddToCart = async (menu_id) => {
+    
+    const user_id = userId;
+  
+    if (!user_id) {
+      alert("Please log in to add items to the cart.");
+      return;
+    }
+  
     const order_id = Date.now();
     const quantity = 1;
-
+  
     const selectedItem = results.find((item) => item.id === menu_id);
     if (!selectedItem) return;
-
+  
     const price = selectedItem.price;
-
-    const cartItem = { order_id, menu_id, quantity, price };
-
+  
+    const cartItem = { order_id, menu_id, quantity, price, user_id }; // Add user_id to cart item
+  
     try {
       const response = await fetch(
         "http://localhost:4000/order_items/add-to-cart",
@@ -67,7 +71,7 @@ const SearchResults = () => {
           body: JSON.stringify(cartItem),
         }
       );
-
+  
       if (response.ok) {
         alert("Item added to cart successfully!");
         setCart((prevCart) => [...prevCart, cartItem]);
@@ -78,6 +82,7 @@ const SearchResults = () => {
       console.error("Error adding to cart:", error);
     }
   };
+  
 
   return (
     <div className="bg-gray-50 min-h-screen py-10 px-4">
@@ -107,7 +112,7 @@ const SearchResults = () => {
               >
                 {/* Image */}
                 <img
-                  src={result.imageUrl || "https://via.placeholder.com/300"}
+                  src={result.image_url || "https://via.placeholder.com/300"}
                   alt={result.name}
                   className="w-full h-48 object-cover"
                 />

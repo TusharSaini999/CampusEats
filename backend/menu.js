@@ -143,8 +143,7 @@ router.get("/search-menu/:query", (req, res) => {
   const sql = `
     SELECT * 
     FROM menu 
-    WHERE name LIKE ? OR category LIKE ?
-  `;
+    WHERE (availability > 0 AND vendor_id IN (SELECT id FROM vendors WHERE current=1)) AND (name LIKE ? OR category LIKE ?)`;
   const values = [`%${query}%`, `%${query}%`];
 
   db.query(sql, values, (err, results) => {
