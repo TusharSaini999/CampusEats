@@ -162,17 +162,6 @@ const Cart = () => {
           ))}
         </div>
 
-        {/* Coupon Section */}
-        <div className="flex items-center mt-6 space-x-4">
-          <input
-            type="text"
-            placeholder="Coupon code"
-            className="flex-1 border p-2 rounded"
-          />
-          <button className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">
-            Apply Coupon
-          </button>
-        </div>
       </div>
 
       {/* Cart Totals Section */}
@@ -189,10 +178,6 @@ const Cart = () => {
           <div>
             <p className="font-semibold mb-2">Shipping</p>
             <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input type="radio" name="shipping" defaultChecked />
-                <span>Free shipping</span>
-              </label>
               <label className="flex items-center space-x-2">
                 <input type="radio" name="shipping" />
                 <span>Flat rate: &#8377;10.00</span>

@@ -70,11 +70,6 @@ const RestaurantDashboard = () => {
   const toggleAddDishModal = () => {
     setShowAddDishModal(!showAddDishModal);
   };
-
-  const toggleOnlineStatus = () => {
-    setIsOnline(!isOnline);
-  };
-
   const toggleNotificationModal = () => {
     setShowNotificationModal(!showNotificationModal);
   };
@@ -144,7 +139,6 @@ const RestaurantDashboard = () => {
       });
       alert("Menu item updated successfully!");
       setIsEditing(false);
-      setVendorId("");
       setName("");
       setDescription("");
       setPrice("");
