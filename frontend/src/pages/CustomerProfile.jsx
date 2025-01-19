@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Modal from "react-modal";
-
+import { Link } from "react-router-dom";
 Modal.setAppElement("#root");
 
 function ProfilePage() {
@@ -57,19 +57,23 @@ function ProfilePage() {
     }
 
     try {
-      await axios.put(
-        "http://localhost:4000/users/profile-update",
-        {
-          ...formData,
-          id: profileData.id,
-          userType,
-          currentPassword: password,
-        },
-        {
-          headers: { Authorization: token },
-        }
-      );
-      setProfileData(formData);
+      const formDataObj = new FormData();
+      formDataObj.append("id", profileData.id);
+      formDataObj.append("name", formData.name);
+      formDataObj.append("phone", formData.phone);
+      formDataObj.append("address", formData.address);
+      formDataObj.append("currentPassword", password);
+      formDataObj.append("userType", userType);
+
+      if (selectedImage) {
+        formDataObj.append("image", selectedImage);
+      }
+
+      await axios.put("http://localhost:4000/users/profile-update", formDataObj, {
+        headers: { Authorization: token, "Content-Type": "multipart/form-data" },
+      });
+
+      setProfileData((prev) => ({ ...prev, ...formData }));
       setIsEditing(false);
       setPassword("");
       openModal("Profile updated successfully!");
@@ -84,7 +88,11 @@ function ProfilePage() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedImage(URL.createObjectURL(file));
+      setSelectedImage(file);
+      setFormData((prev) => ({
+        ...prev,
+        image: URL.createObjectURL(file),
+      }));
     }
   };
 
@@ -137,11 +145,10 @@ function ProfilePage() {
         <div className="relative">
           <img
             src={
-              selectedImage ||
-              profileData.image ||
-              "https://via.placeholder.com/100"
+              formData.image ||
+              "/profile/main.jpg"
             }
-            alt={profileData.name || "User"}
+            alt={formData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />
           <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer hover:bg-blue-400">
@@ -173,13 +180,16 @@ function ProfilePage() {
           </label>
         </div>
         <h2 className="text-xl font-bold text-gray-800 mb-1">
-          {profileData.name || "N/A"}
+          {formData.name || "N/A"}
         </h2>
-        <p className="text-gray-500 mb-6">{profileData.email || "N/A"}</p>
+        <p className="text-gray-500 mb-6">{formData.email || "N/A"}</p>
         {userType !== "vendor" && (
-          <button className="w-3/4 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg shadow-md">
+          <Link
+            to="/order-history"
+            className="w-3/4 text-center bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg shadow-md"
+          >
             Orders
-          </button>
+          </Link>
         )}
       </aside>
 
@@ -264,14 +274,13 @@ function ProfilePage() {
             {isEditing && (
               <div>
                 <label className="block text-gray-600 text-sm mb-1">
-                  Confirm Password
+                  Current Password
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border rounded-md px-3 py-2 text-gray-800"
-                  placeholder="Enter your password"
+                  className="w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none"
                 />
               </div>
             )}

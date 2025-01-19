@@ -4,6 +4,8 @@ const db = require("./db");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
+const multer = require("multer");
+const path = require("path");
 
 //signup for customers
 //http://localhost:4000/users/signup-customer
@@ -118,20 +120,36 @@ router.post("/login", async (req, res) => {
 router.get("/customer-profile/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const response = await db.promise().query("SELECT * FROM users");
+    const [response] = await db.promise().query("SELECT * FROM users WHERE id = ?", [id]);
+    if (response.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.status(200).json(response[0]);
   } catch (e) {
-    res.status(404).json(e);
+    res.status(500).json({ message: "Error fetching user profile", error: e.message });
   }
 });
 
-//http://localhost:4000/users/profile-update
-router.put("/profile-update", async (req, res) => {
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../frontend/public/profile/")); // Save images in the `uploads` folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}_${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
+
+router.put("/profile-update", upload.single("image"), async (req, res) => {
   const { id, name, phone, address, currentPassword, userType } = req.body;
 
   if (!id || !userType) {
     return res.status(400).json({ message: "User ID and user type are required" });
   }
+
+  let profileImage = req.file ? `/profile/${req.file.filename}` : null;
 
   try {
     let query = "";
@@ -140,15 +158,15 @@ router.put("/profile-update", async (req, res) => {
     if (userType === "user") {
       query = `
         UPDATE users 
-        SET name = ?, phone = ?, address = ? 
+        SET name = ?, phone = ?, address = ?, image = COALESCE(?, image)
         WHERE id = ?`;
-      params = [name, phone, address, id];
+      params = [name, phone, address, profileImage, id];
     } else if (userType === "vendor") {
       query = `
         UPDATE vendors 
-        SET name = ?, phone = ?, address = ? 
+        SET name = ?, phone = ?, address = ?, image = COALESCE(?, image)
         WHERE id = ?`;
-      params = [name, phone, address, id];
+      params = [name, phone, address, profileImage, id];
     } else {
       return res.status(400).json({ message: "Invalid user type" });
     }

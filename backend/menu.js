@@ -36,12 +36,12 @@ const upload = multer({ storage: storage }).single('image_url');
 
 
 // API endpoint to handle POST request for adding a dish
-//curl -X POST http://localhost:4000/menu/post-menu -F "vendor_id=1" -F "name=Dish Name" -F "description=Dish Description" -F "price=100" -F "category=Category" -F "availability=1" -F "image_url=@C:/Users/tusha/OneDrive/Pictures/Screenshots/1.png"
+//curl -X POST http://localhost:4000/menu/post-menu -F "vendor_id=1" -F "name=Dish Name" -F "description=Dish Description" -F "price=100" -F "category=Category" -F "availability=1" -F "image_url=@C:/Users/tusha/OneDrive/Pictures/Screenshots/1.png" -F "created_at=2005/04/23"
 
 router.post('/post-menu', upload, async (req, res) => {
   console.log(req.file);
 
-  const { vendor_id, name, description, price, category, availability, created_at } = req.body;
+  const { vendor_id, name, description, price, category, availability} = req.body;
 
   const image_url = req.file ? `images/${req.file.filename}` : null;
 
@@ -52,8 +52,8 @@ router.post('/post-menu', upload, async (req, res) => {
   try {
 
     const result = await db.promise().query(
-      `INSERT INTO menu (vendor_id, name, description, price, category, image_url, availability, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO menu (vendor_id, name, description, price, category, image_url, availability) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         vendor_id,
         name,
@@ -62,7 +62,6 @@ router.post('/post-menu', upload, async (req, res) => {
         category,
         image_url,
         availability,
-        created_at,
       ]
     );
     res.status(201).json({ message: "Dish added successfully!" });
