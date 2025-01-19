@@ -135,7 +135,6 @@ function ProfilePage() {
       {/* Sidebar */}
       <aside className="w-1/4 bg-white shadow-lg flex flex-col items-center py-8">
         <div className="relative">
-          {/* Profile Image */}
           <img
             src={
               selectedImage ||
@@ -145,7 +144,6 @@ function ProfilePage() {
             alt={profileData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />
-          {/* File Input for Image Selection */}
           <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer hover:bg-blue-400">
             <input
               type="file"
@@ -153,7 +151,6 @@ function ProfilePage() {
               onChange={handleImageChange}
               className="hidden"
             />
-            {/* Camera Icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -210,7 +207,6 @@ function ProfilePage() {
             )}
           </div>
 
-          {/* Profile Form */}
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-600 text-sm mb-1">

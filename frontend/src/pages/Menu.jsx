@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [userType, setUserType] = useState("");
@@ -31,13 +30,10 @@ const Menu = () => {
     };
     fetchMenuItems();
   }, []);
-  
 
   const handleAddToCart = async (menu_id) => {
     const order_id = Date.now(); // Generate a unique order ID
     const quantity = 1;
-
-    // Assume currentUser contains the logged-in user's data, including user_id
     const user_id = userId;
 
     if (!user_id) {
