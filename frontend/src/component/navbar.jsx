@@ -7,6 +7,7 @@ const Navbar = () => {
   const [userType, setUserType] = useState("");
   const [userId, setUserId] = useState("");
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,36 +23,36 @@ const Navbar = () => {
   }, [location]);
 
   const handleLogout = async () => {
-   /* if (userType === "vendor") {
-      const newStatus = 0; // Always set to 0 (offline)
-  
-      try {
-        const response = await fetch("http://localhost:4000/vendors/update-vendor-status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            vendorId: userId, // Pass the vendorId
-            current: newStatus, // Set status to 0 (offline)
-          }),
-        });
-  
-        const data = await response.json(); // Await the response
-  
-        if (response.ok) {
-          // The status is updated to offline, you can perform additional actions here
-          console.log("Vendor status updated to offline.");
-        } else {
-          console.error("Error updating status:", data.error);
-          alert("Failed to update vendor status. Try again.");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred while updating the status.");
-      }
-    }
-  */
+    /* if (userType === "vendor") {
+       const newStatus = 0; // Always set to 0 (offline)
+   
+       try {
+         const response = await fetch("http://localhost:4000/vendors/update-vendor-status", {
+           method: "POST",
+           headers: {
+             "Content-Type": "application/json",
+           },
+           body: JSON.stringify({
+             vendorId: userId, // Pass the vendorId
+             current: newStatus, // Set status to 0 (offline)
+           }),
+         });
+   
+         const data = await response.json(); // Await the response
+   
+         if (response.ok) {
+           // The status is updated to offline, you can perform additional actions here
+           console.log("Vendor status updated to offline.");
+         } else {
+           console.error("Error updating status:", data.error);
+           alert("Failed to update vendor status. Try again.");
+         }
+       } catch (error) {
+         console.error("Error:", error);
+         alert("An error occurred while updating the status.");
+       }
+     }
+   */
     // Perform logout actions
     localStorage.removeItem("token");
     localStorage.removeItem("userType");
@@ -61,7 +62,10 @@ const Navbar = () => {
     navigate("/login");
     window.location.reload();
   };
-  
+
+
+
+
 
   const closeModal = () => {
     setIsLogoutModalOpen(false);
@@ -70,34 +74,44 @@ const Navbar = () => {
   const openModal = () => {
     setIsLogoutModalOpen(true);
   };
+
   const handleSearch = (e) => {
     e.preventDefault();
     navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
     setSearchQuery("");
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-md">
+    <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-md">
       {/* Logo */}
-      <Link to="/" className="text-2xl font-bold text-purple-700">
-      CampusEats
-     </Link>
+      <Link to="/" className="text-xl font-bold text-purple-700 sm:text-2xl">
+        CampusEats
+      </Link>
+
+      {/* Search Bar */}
       {userType !== "vendor" && userType !== "delivery_boy" && (
         <form
           onSubmit={handleSearch}
-          className="flex items-center border border-gray-300 rounded-full px-4 py-2 w-full max-w-lg"
+          className="flex items-center border border-gray-300 rounded-full px-2 py-1 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
         >
           <input
             type="text"
             placeholder="Search for food or restaurants"
-            className="flex-grow outline-none text-gray-700"
+            className="w-1 flex-grow outline-none text-gray-700 text-sm px-2"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button type="submit">
+          <button
+            type="submit"
+            className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full hover:bg-gray-200 transition"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-500 cursor-pointer"
+              className="h-5 w-5 text-gray-500"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -110,10 +124,29 @@ const Navbar = () => {
           </button>
         </form>
       )}
+      {/* Mobile Menu Toggle Button */}
+      <button
+        className="md:hidden text-gray-600 focus:outline-none"
+        onClick={toggleMobileMenu}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16m-7 6h7"
+          />
+        </svg>
+      </button>
 
-      {/* Navigation Links */}
+      {/* Desktop Menu */}
       <div className="hidden md:flex items-center space-x-6 text-gray-600">
-        {/* Conditionally Render Links Based on Login Status */}
         <Link to="/recipe-generator">Recipe Generator</Link>
         {isLoggedIn ? (
           <>
@@ -125,7 +158,6 @@ const Navbar = () => {
             <Link to="/profile" className="hover:text-purple-700">
               Profile
             </Link>
-            {/* Show Cart and Track Order buttons only if userType is NOT vendor */}
             {userType !== "vendor" && (
               <>
                 <Link to="/cart" className="hover:text-purple-700">
@@ -134,13 +166,15 @@ const Navbar = () => {
                 <Link to="/order-history" className="hover:text-purple-700">
                   Order History
                 </Link>
-
               </>
             )}
             {userType === "user" && (
-              <>
-                <Link to={`/delivery/${userId}`} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Track Order</Link>
-              </>
+              <Link
+                to={`/delivery/${userId}`}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              >
+                Track Order
+              </Link>
             )}
             <button
               onClick={openModal}
@@ -158,6 +192,58 @@ const Navbar = () => {
           </Link>
         )}
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-16 left-0 w-full bg-white shadow-md z-10 md:hidden">
+          <div className="flex flex-col items-start space-y-4 p-4 text-gray-600">
+            <Link to="/recipe-generator">Recipe Generator</Link>
+            {isLoggedIn ? (
+              <>
+                {userType !== "vendor" && (
+                  <Link to="/menu" className="hover:text-purple-700">
+                    Menu
+                  </Link>
+                )}
+                <Link to="/profile" className="hover:text-purple-700">
+                  Profile
+                </Link>
+                {userType !== "vendor" && (
+                  <>
+                    <Link to="/cart" className="hover:text-purple-700">
+                      Cart
+                    </Link>
+                    <Link to="/order-history" className="hover:text-purple-700">
+                      Order History
+                    </Link>
+                  </>
+                )}
+                {userType === "user" && (
+                  <Link
+                    to={`/delivery/${userId}`}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                  >
+                    Track Order
+                  </Link>
+                )}
+                <button
+                  onClick={openModal}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-800 transition"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Logout Modal */}
       <Modal

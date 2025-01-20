@@ -3,11 +3,9 @@ import React from 'react';
 const Footer = () => {
   return (
     <div className="bg-gray-100 flex flex-col">
-      {/* Track Order Section */}
-
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-10 mt-auto">
-        <div className="container mx-auto px-6 grid grid-cols-3 gap-6">
+        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Column 1: About */}
           <div>
             <h3 className="font-semibold text-lg mb-4">CampusEats</h3>
@@ -40,8 +38,6 @@ const Footer = () => {
         <div className="text-center text-gray-500 text-sm mt-6">
           © 2023 CampusEats. All rights reserved.
         </div>
-
-        {/* Display IP Address */}
       </footer>
     </div>
   );

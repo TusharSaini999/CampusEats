@@ -114,10 +114,11 @@ const LoginSignup = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 bg-check-pattern">
-      <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex transform transition duration-300 hover:scale-105">
+      <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col md:flex-row transform transition duration-300 hover:scale-105">
+        
         {/* Left Panel */}
-        <div className="w-1/2 bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-8 flex flex-col items-center justify-center">
-          <h2 className="text-5xl font-extrabold mb-6 animate-fadeIn">
+        <div className="w-full md:w-1/2 bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-8 flex flex-col items-center justify-center">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 animate-fadeIn">
             {isSignup ? "REGISTER" : "LOGIN"}
           </h2>
           <p className="text-lg mb-8 text-center px-6 animate-fadeIn">
@@ -132,10 +133,10 @@ const LoginSignup = () => {
             {isSignup ? "LOGIN" : "REGISTER"}
           </button>
         </div>
-
+  
         {/* Right Panel */}
-        <div className="w-1/2 p-10">
-          <h2 className="text-3xl font-bold text-purple-700 mb-6">
+        <div className="w-full md:w-1/2 p-8 md:p-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-purple-700 mb-6">
             {isSignup ? "Create an Account" : "Welcome Back"}
           </h2>
           <form onSubmit={handleFormSubmit} className="space-y-6">
@@ -210,7 +211,7 @@ const LoginSignup = () => {
           {success && <p className="text-green-500 mt-4">{success}</p>}
         </div>
       </div>
-
+  
       {/* Modal */}
       <Modal
         isOpen={isModalOpen}
@@ -229,6 +230,7 @@ const LoginSignup = () => {
       </Modal>
     </div>
   );
+  
 };
 
 export default LoginSignup;

@@ -22,7 +22,7 @@ const CampusEats = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
           What do you feel like having?
         </h2>
-        <div className="grid grid-cols-6 gap-6 ">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {[
             {
               name: "Aalo Paratha",
@@ -40,14 +40,14 @@ const CampusEats = () => {
             <button
               key={category.name}
               onClick={() => handleCategoryClick(category.name)}
-              className="relative group bg-purple-50 hover:bg-purple-100 transition transform hover:-translate-y-2 duration-300 shadow-md rounded-lg flex flex-col items-center  cursor-pointer p-2"
+              className="relative group bg-purple-50 hover:bg-purple-100 transition transform hover:-translate-y-2 duration-300 shadow-md rounded-lg flex flex-col items-center cursor-pointer p-2"
             >
               <img
                 src={category.img}
                 alt={category.name}
-                className="w-40 h-40 object-cover mb-4 rounded-md transition-transform transform group-hover:scale-110 duration-300"
+                className="w-32 h-32 md:w-40 md:h-40 object-cover mb-4 rounded-md transition-transform transform group-hover:scale-110 duration-300"
               />
-              <span className="text-lg font-semibold text-gray-700 group-hover:text-gray-900 tracking-wide">
+              <span className="text-sm sm:text-lg font-semibold text-gray-700 group-hover:text-gray-900 tracking-wide">
                 {category.name}
               </span>
               <div className="absolute inset-0 bg-purple-300 opacity-0 group-hover:opacity-20 rounded-lg transition duration-300"></div>
@@ -61,7 +61,7 @@ const CampusEats = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
           Featured Dishes
         </h2>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {[
             {
               name: "Vanilla Burst Cake",
@@ -104,16 +104,16 @@ const CampusEats = () => {
               <img
                 src={dish.image}
                 alt={dish.name}
-                className="w-full h-48 object-cover"
+                className="w-full h-40 sm:h-48 object-cover"
               />
               <div className="p-4">
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                <h3 className="font-semibold text-sm sm:text-lg text-gray-900 mb-2">
                   {dish.name}
                 </h3>
-                <p className="text-gray-500 text-sm mb-4">
+                <p className="text-gray-500 text-xs sm:text-sm mb-4">
                   {dish.description}
                 </p>
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex justify-between items-center text-xs sm:text-sm">
                   <span className="text-yellow-500 font-semibold">
                     ★ {dish.rating}
                   </span>

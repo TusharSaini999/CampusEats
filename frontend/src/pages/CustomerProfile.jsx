@@ -122,7 +122,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col md:flex-row h-screen">
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
@@ -141,13 +141,10 @@ function ProfilePage() {
       </Modal>
 
       {/* Sidebar */}
-      <aside className="w-1/4 bg-white shadow-lg flex flex-col items-center py-8">
-        <div className="relative">
+      <aside className="w-full md:w-1/4 bg-white shadow-lg flex flex-col items-center py-8 px-4">
+        <div className="relative mb-6">
           <img
-            src={
-              formData.image ||
-              "/profile/main.jpg"
-            }
+            src={formData.image || "/profile/main.jpg"}
             alt={formData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />
@@ -217,11 +214,9 @@ function ProfilePage() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-600 text-sm mb-1">
-                Full Name
-              </label>
+              <label className="block text-gray-600 text-sm mb-1">Full Name</label>
               <input
                 type="text"
                 name="name"
@@ -257,9 +252,7 @@ function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-gray-600 text-sm mb-1">
-                Address
-              </label>
+              <label className="block text-gray-600 text-sm mb-1">Address</label>
               <input
                 type="text"
                 name="address"
