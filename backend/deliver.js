@@ -9,10 +9,10 @@ require('dotenv').config();
 
 //curl -X POST http://localhost:4000/delivery/signup-delivery-boy -H "Content-Type: application/json" -d "{\"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"password\": \"securepassword123\", \"userType\": \"delivery_boy\"}"
 router.post("/signup-delivery-boy", async (req, res) => {
-  const { name, email, password, userType } = req.body;
+  const { name, email, password, mobile, userType } = req.body;
   console.log("Received data:", req.body);
   try {
-    
+
     const [existingDeliveryBoy] = await db
       .promise()
       .query("SELECT * FROM delivery WHERE email = ?", [email]);
@@ -24,17 +24,17 @@ router.post("/signup-delivery-boy", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-  
+
     const [insertedDelivery] = await db
       .promise()
       .query(
-        "INSERT INTO delivery (name, email, password, userType) VALUES (?, ?, ?, ?)",
-        [name, email, hashedPassword, userType]
+        "INSERT INTO delivery (name, email, password,moble_no, userType) VALUES (?, ?, ?, ?,?)",
+        [name, email, hashedPassword, mobile, userType]
       );
 
- 
+
     const deliveryBoyId = insertedDelivery.insertId;
-    
+
     await db
       .promise()
       .query(
@@ -95,13 +95,13 @@ router.put("/update-delivery-boy", async (req, res) => {
       return res.status(400).json({ error: "Email already in use" });
     }
 
- 
+
     let hashedPassword = deliveryBoy[0].password; // Use the existing password if no new password is provided
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
-  
+
     await db
       .promise()
       .query(
@@ -187,7 +187,7 @@ router.post("/accept-order", async (req, res) => {
   const { orderId, deliveryBoyId } = req.body; // Order ID and Delivery Boy ID from request
 
   try {
-    
+
     const [order] = await db.promise().query(
       `SELECT * FROM orders WHERE id = ? AND status = 'pending' AND (delivery_boy_id IS NULL OR delivery_boy_id = ?)`,
       [orderId, deliveryBoyId]
@@ -197,7 +197,7 @@ router.post("/accept-order", async (req, res) => {
       return res.status(404).json({ message: "Order not found or already accepted" });
     }
 
-   
+
     await db.promise().query(
       `UPDATE orders SET delivery_boy_id = ?, status = 'accepted' WHERE id = ?`,
       [deliveryBoyId, orderId]

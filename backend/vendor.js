@@ -6,7 +6,7 @@ const router = express.Router();
 //Vendor signup
 //http://localhost:4000/vendors/signup-vendor
 router.post("/signup-vendor", async (req, res) => {
-  const { name, email, password, userType } = req.body;
+  const { name, email, password, userType, mobile } = req.body;
 
   try {
     const [existingCustomer] = await db
@@ -21,8 +21,8 @@ router.post("/signup-vendor", async (req, res) => {
     await db
       .promise()
       .query(
-        "INSERT INTO vendors (name, email, password, userType) VALUES (?, ?, ?, ?)",
-        [name, email, hashedPassword, userType]
+        "INSERT INTO vendors (name, email, password ,phone, userType) VALUES (?, ?, ?, ?,?)",
+        [name, email, hashedPassword, mobile, userType]
       );
 
     res.status(201).json({ message: "Customer registered successfully" });

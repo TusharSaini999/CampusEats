@@ -10,7 +10,7 @@ const path = require("path");
 //signup for customers
 //http://localhost:4000/users/signup-customer
 router.post("/signup-customer", async (req, res) => {
-  const { name, email, password, userType } = req.body;
+  const { name, email, password, mobile, userType } = req.body;
 
   try {
     const [existingCustomer] = await db
@@ -25,8 +25,8 @@ router.post("/signup-customer", async (req, res) => {
     await db
       .promise()
       .query(
-        "INSERT INTO users (name, email, password, userType) VALUES (?, ?, ?, ?)",
-        [name, email, hashedPassword, userType]
+        "INSERT INTO users (name, email, password, phone, userType) VALUES (?, ?, ?, ?,?)",
+        [name, email, hashedPassword, mobile, userType]
       );
 
     res.status(201).json({ message: "Customer registered successfully" });
@@ -167,6 +167,12 @@ router.put("/profile-update", upload.single("image"), async (req, res) => {
         SET name = ?, phone = ?, address = ?, image = COALESCE(?, image)
         WHERE id = ?`;
       params = [name, phone, address, profileImage, id];
+    } else if (userType === "delivery_boy") {
+      query = `
+        UPDATE delivery 
+        SET name = ?, moble_no = ?, address = ?, image = COALESCE(?, image)
+        WHERE id = ?`;
+      params = [name, phone, address, profileImage, id];
     } else {
       return res.status(400).json({ message: "Invalid user type" });
     }
@@ -183,6 +189,7 @@ router.put("/profile-update", upload.single("image"), async (req, res) => {
     res.status(500).json({ message: "Failed to update profile" });
   }
 });
+
 
 
 //http://localhost:4000/users/customer-profile-delete:id=
@@ -221,6 +228,8 @@ router.get("/profile", (req, res) => {
       query = "SELECT * FROM vendors WHERE id = ?";
     } else if (userType === "user") {
       query = "SELECT * FROM users WHERE id = ?";
+    } else if (userType === "delivery_boy") {
+      query = "SELECT * FROM delivery WHERE id = ?";
     } else {
       return res.status(400).json({ message: "Invalid role in token" });
     }
@@ -239,24 +248,37 @@ router.get("/profile", (req, res) => {
 
       if (userType === "vendor") {
         res.json({
-          id:userId,
+          id: userId,
           userType: "vendor",
           name: user.name,
           email: user.email,
-          phone:user.phone,
-          address:user.address,
+          phone: user.phone,
+          address: user.address,
           businessName: user.business_name || "N/A",
-          image: user.image || "https://via.placeholder.com/100",
+          image: user.image || "/profile/main.jpg",
         });
-      } else {
+      } else if (userType === "user") {
         res.json({
-          id:userId,
+          id: userId,
           userType: "user",
           name: user.name,
           email: user.email,
-          phone:user.phone,
-          address:user.address,
-          image: user.image || "https://via.placeholder.com/100",
+          phone: user.phone,
+          address: user.address,
+          image: user.image || "/profile/main.jpg",
+        });
+      } else if (userType === "delivery_boy") {
+        res.json({
+          id: userId,
+          userType: "delivery_boy",
+          name: user.name,
+          email: user.email,
+          phone: user.moble_no, // Using `moble_no` as per your `delivery` table schema
+          image: user.image || "/profile/main.jpg",
+          revenue: user.revenue || 0,
+          totalDelivery: user.total_delivery || 0,
+          createdAt: user.created_at,
+          address: user.address,
         });
       }
     });
@@ -265,5 +287,6 @@ router.get("/profile", (req, res) => {
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 });
+
 
 module.exports = router;

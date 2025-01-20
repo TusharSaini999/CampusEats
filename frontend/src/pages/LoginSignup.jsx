@@ -37,13 +37,23 @@ const LoginSignup = () => {
     setSuccess("");
 
     // Form validation
-    if (isSignup && (!formData.name || !formData.email || !formData.password)) {
-      setError("All fields are required.");
-      return;
-    }
-    if (!isSignup && (!formData.email || !formData.password)) {
-      setError("All fields are required.");
-      return;
+    if (isSignup) {
+      if (!formData.name || !formData.email || !formData.password || !formData.mobile_no) {
+        setError("All fields are required.");
+        return;
+      }
+
+      // Mobile number length validation
+      if (formData.mobile_no.length !== 10) {
+        setModalMessage("Mobile number must be exactly 10 digits.");
+        openModal();
+        return;
+      }
+    } else {
+      if (!formData.email || !formData.password) {
+        setError("All fields are required.");
+        return;
+      }
     }
 
     try {
@@ -53,14 +63,14 @@ const LoginSignup = () => {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          mobile: formData.mobile_no,
           userType: formData.userType,
         });
 
         setSuccess(response.data.message || "Registration successful!");
         setModalMessage("Registration successful! Please log in to continue.");
         openModal();
-        localStorage.setItem("userType", formData.userType);
-        localStorage.setItem("id", response.data.id);
+
 
         navigate("/login");
       } else {
@@ -78,11 +88,15 @@ const LoginSignup = () => {
         localStorage.setItem("userType", userType);
         localStorage.setItem("id", response.data.id);
 
-        if (userType === "vendor") {
+        if (userType == "vendor") {
           navigate("/dashboard");
           window.location.reload();
-        } else {
-          navigate("/");
+        } else if (userType == "delivery_boy") {
+          navigate("/delivery-boy-dashboard");
+          window.location.reload();
+        }
+        else {
+          navigate("/")
           window.location.reload();
         }
       }
@@ -95,8 +109,8 @@ const LoginSignup = () => {
     switch (userType) {
       case "vendor":
         return "http://localhost:4000/vendors/signup-vendor";
-      case "deliveryboy":
-        return "http://localhost:4000/users/signup-deliveryboy";
+      case "delivery_boy":
+        return "http://localhost:4000/delivery/signup-delivery-boy";
       case "college":
         return "http://localhost:4000/users/signup-college";
       default:
@@ -115,7 +129,7 @@ const LoginSignup = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 bg-check-pattern">
       <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col md:flex-row transform transition duration-300 hover:scale-105">
-        
+
         {/* Left Panel */}
         <div className="w-full md:w-1/2 bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-8 flex flex-col items-center justify-center">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-6 animate-fadeIn">
@@ -133,7 +147,7 @@ const LoginSignup = () => {
             {isSignup ? "LOGIN" : "REGISTER"}
           </button>
         </div>
-  
+
         {/* Right Panel */}
         <div className="w-full md:w-1/2 p-8 md:p-10">
           <h2 className="text-2xl md:text-3xl font-bold text-purple-700 mb-6">
@@ -142,17 +156,34 @@ const LoginSignup = () => {
           <form onSubmit={handleFormSubmit} className="space-y-6">
             {isSignup && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-full border-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition duration-200"
-                  required
-                />
+                <div className="mb-4">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                    placeholder="Enter your Name"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="mobile_no" className="block text-sm font-medium text-gray-700 mb-2">
+                    Mobile Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="mobile_no"
+                    value={formData.mobile_no || ""}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                    placeholder="Enter your mobile number"
+                    required
+                  />
+                </div>
               </div>
             )}
             <div>
@@ -165,9 +196,11 @@ const LoginSignup = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 rounded-full border-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                placeholder="Enter your Email"
                 required
               />
             </div>
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -178,6 +211,7 @@ const LoginSignup = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 rounded-full border-2 border-gray-300 bg-transparent focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition duration-200"
+                placeholder="Enter your Password"
                 required
               />
             </div>
@@ -195,11 +229,14 @@ const LoginSignup = () => {
                 >
                   <option value="user">Customer</option>
                   <option value="vendor">Vendor</option>
-                  <option value="deliveryboy">Deliveryboy</option>
+                  <option value="delivery_boy">Delivery Boy</option>
                   <option value="college">College</option>
                 </select>
               </div>
             )}
+
+
+
             <button
               type="submit"
               className="w-full bg-indigo-600 text-white py-3 px-4 rounded-full hover:bg-indigo-700 font-bold shadow-lg transform transition duration-200 ease-in-out hover:scale-105"
@@ -211,7 +248,7 @@ const LoginSignup = () => {
           {success && <p className="text-green-500 mt-4">{success}</p>}
         </div>
       </div>
-  
+
       {/* Modal */}
       <Modal
         isOpen={isModalOpen}
@@ -230,7 +267,7 @@ const LoginSignup = () => {
       </Modal>
     </div>
   );
-  
+
 };
 
 export default LoginSignup;
