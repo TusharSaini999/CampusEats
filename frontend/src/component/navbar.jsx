@@ -84,7 +84,7 @@ const Navbar = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-
+  console.log(userType);
   return (
     <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-md">
       {/* Logo */}
@@ -192,15 +192,17 @@ const Navbar = () => {
           </Link>
         )}
       </div>
-
+     
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md z-10 md:hidden">
           <div className="flex flex-col items-start space-y-4 p-4 text-gray-600">
             <Link to="/recipe-generator">Recipe Generator</Link>
             {isLoggedIn ? (
+              
               <>
-                {userType !== "vendor" && (
+            
+                {userType !== "vendor" && userType === "delivery_boy" && (
                   <Link to="/menu" className="hover:text-purple-700">
                     Menu
                   </Link>
@@ -224,6 +226,14 @@ const Navbar = () => {
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
                   >
                     Track Order
+                  </Link>
+                )}
+                {userType == "delivery_boy" && (
+                  <Link
+                    to={`/custmer/${userId}`}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                  >
+                    Track customer
                   </Link>
                 )}
                 <button

@@ -31,7 +31,7 @@ const DeliveryTrackingPage = () => {
     try {
       const response = await axios.get(
         `http://localhost:4000/map/locations?ord_id=${orderId}&deli_boy=${deliveryid}`
-      );
+       );
       if (response.data.status === "success") {
         setCustomerLocation(response.data.customer_location);
         setDeliveryBoyLocation(response.data.delivery_boy_location);
@@ -45,11 +45,60 @@ const DeliveryTrackingPage = () => {
     }
   };
 
+  // Function to update delivery boy's location in the backend
+  const updateDeliveryBoyLocation = async (latitude, longitude) => {
+    try {
+      await axios.post("http://localhost:4000/map/update-location", {
+        delivery_boy_id: deliveryid,
+        latitude,
+        longitude,
+      });
+      console.log("Location updated successfully:", { latitude, longitude });
+    } catch (err) {
+      console.error("Error updating location:", err);
+    }
+  };
+
   useEffect(() => {
     if (orderId && deliveryid) {
       fetchLocations(); // Fetch locations initially
     }
   }, [orderId, deliveryid]);
+
+  useEffect(() => {
+    // Get current location from GPS
+    const getCurrentLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+
+            // Update delivery boy's location in the backend
+            updateDeliveryBoyLocation(latitude, longitude);
+
+            // Update the location in the frontend state
+            setDeliveryBoyLocation({
+              delivery_latitude: latitude,
+              delivery_longitude: longitude,
+            });
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            setError("Unable to access your location. Please enable GPS.");
+          }
+        );
+      } else {
+        setError("Geolocation is not supported by your browser.");
+      }
+    };
+
+    // Update location every 5 seconds
+    const interval = setInterval(() => {
+      getCurrentLocation();
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [deliveryid]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,7 +114,7 @@ const DeliveryTrackingPage = () => {
     <div className="min-h-screen bg-gradient-to-r from-blue-50 to-gray-100 text-gray-900 flex flex-col">
       <div className="max-w-4xl mx-auto w-full p-6 bg-white shadow-md rounded-md mt-10">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-6">
-          Track Your Delivery
+          Track Your Customer
         </h1>
         <form onSubmit={handleSubmit} className="flex items-center gap-4">
           <input
@@ -114,13 +163,7 @@ const DeliveryTrackingPage = () => {
                 icon={deliveryBoyIcon}
               >
                 <Popup>
-                  <div>
-                    <strong>Delivery Boy Instructions:</strong><br />
-                    Start from your current location: <br />
-                    Latitude: {deliveryBoyLocation.delivery_latitude}, Longitude: {deliveryBoyLocation.delivery_longitude} <br />
-                    Proceed towards the customer location: <br />
-                    Latitude: {customerLocation.customer_latitude}, Longitude: {customerLocation.customer_longitude}
-                  </div>
+                  Delivery Boy's Current Location: Latitude {deliveryBoyLocation.delivery_latitude}, Longitude {deliveryBoyLocation.delivery_longitude}
                 </Popup>
               </Marker>
             )}
@@ -142,15 +185,8 @@ const Routing = ({ customerLocation, deliveryBoyLocation }) => {
   const routingControlRef = useRef(null);
   useEffect(() => {
     if (customerLocation && deliveryBoyLocation) {
-      try {
-        // Remove existing routing control safely
-        if (routingControlRef.current) {
-          routingControlRef.current.getPlan().setWaypoints([]);
-          map.removeControl(routingControlRef.current);
-          routingControlRef.current = null;
-        }
-
-        // Create a new routing control
+      if (!routingControlRef.current) {
+        // Initialize routing control only once
         routingControlRef.current = L.Routing.control({
           waypoints: [
             L.latLng(
@@ -172,16 +208,27 @@ const Routing = ({ customerLocation, deliveryBoyLocation }) => {
           draggableWaypoints: false, // Disable waypoint dragging
           addWaypoints: false,
         }).addTo(map);
-
-        // Disable route updates and clicks on the route
-        routingControlRef.current.getPlan().on("click", (e) => {
-          e.preventDefault();  // Disable any click action on the route
-          console.log("Route click disabled");
-        });
-
-      } catch (error) {
-        console.error("Error setting up routing:", error);
+      } else {
+        // Update the waypoints dynamically
+        routingControlRef.current.setWaypoints([
+          L.latLng(
+            deliveryBoyLocation.delivery_latitude,
+            deliveryBoyLocation.delivery_longitude
+          ),
+          L.latLng(
+            customerLocation.customer_latitude,
+            customerLocation.customer_longitude
+          ),
+        ]);
       }
+      // Disable route updates and clicks on the route
+      routingControlRef.current.getPlan().on("click", (e) => {
+        e.preventDefault();  // Disable any click action on the route
+        console.log("Route click disabled");
+      });
+      // Disable route updates and clicks on the route
+    }
+  }, [customerLocation, deliveryBoyLocation, map]);
 
       // Cleanup on component unmount
       return () => {
@@ -199,3 +246,4 @@ const Routing = ({ customerLocation, deliveryBoyLocation }) => {
 
 
 export default DeliveryTrackingPage;
+

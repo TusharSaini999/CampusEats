@@ -180,7 +180,7 @@ function ProfilePage() {
           {formData.name || "N/A"}
         </h2>
         <p className="text-gray-500 mb-6">{formData.email || "N/A"}</p>
-        {userType !== "vendor" && (
+        {userType !== "vendor" && userType !== "delivery_boy" && (
           <Link
             to="/order-history"
             className="w-3/4 text-center bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg shadow-md"
