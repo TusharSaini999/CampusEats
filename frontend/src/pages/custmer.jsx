@@ -27,13 +27,11 @@ const DeliveryTrackingPage = () => {
   const [deliveryBoyLocation, setDeliveryBoyLocation] = useState(null);
   const [error, setError] = useState("");
 
-  // Fetch customer and delivery boy locations from the backend
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
         `http://localhost:4000/map/locations?ord_id=${orderId}&deli_boy=${deliveryid}`
       );
-
       if (response.data.status === "success") {
         setCustomerLocation(response.data.customer_location);
         setDeliveryBoyLocation(response.data.delivery_boy_location);
@@ -139,11 +137,9 @@ const DeliveryTrackingPage = () => {
   );
 };
 
-// Routing Component
 const Routing = ({ customerLocation, deliveryBoyLocation }) => {
   const map = useMap();
   const routingControlRef = useRef(null);
-
   useEffect(() => {
     if (customerLocation && deliveryBoyLocation) {
       try {
@@ -200,9 +196,6 @@ const Routing = ({ customerLocation, deliveryBoyLocation }) => {
         }
       };
     }
-  }, [customerLocation, deliveryBoyLocation, map]);
 
-  return null;
-};
 
 export default DeliveryTrackingPage;
