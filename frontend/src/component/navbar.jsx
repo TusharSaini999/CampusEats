@@ -88,9 +88,27 @@ const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-md">
       {/* Logo */}
-      <Link to="/" className="text-xl font-bold text-purple-700 sm:text-2xl">
+      {userType === "vendor" && (
+        <Link to="/dashboard" className="text-xl font-bold text-purple-700 sm:text-2xl">
         CampusEats
       </Link>
+      )}
+      {userType === "user" && (
+        <Link to="/" className="text-xl font-bold text-purple-700 sm:text-2xl">
+        CampusEats
+      </Link>
+      )}
+      {userType === "delivery_boy" && (
+        <Link to="/delivery-boy-dashboard" className="text-xl font-bold text-purple-700 sm:text-2xl">
+        CampusEats
+      </Link>
+      )}
+      {!userType && (
+        <Link to="/" className="text-xl font-bold text-purple-700 sm:text-2xl">
+        CampusEats
+      </Link>
+      )}
+      
 
       {/* Search Bar */}
       {userType !== "vendor" && userType !== "delivery_boy" && (
@@ -150,7 +168,7 @@ const Navbar = () => {
         <Link to="/recipe-generator">Recipe Generator</Link>
         {isLoggedIn ? (
           <>
-            {userType !== "vendor" && (
+            {userType !== "vendor" && userType !== "delivery_boy" && (
               <Link to="/menu" className="hover:text-purple-700">
                 Menu
               </Link>
@@ -158,7 +176,7 @@ const Navbar = () => {
             <Link to="/profile" className="hover:text-purple-700">
               Profile
             </Link>
-            {userType !== "vendor" && (
+            {userType !== "vendor" && userType !== "delivery_boy"  && (
               <>
                 <Link to="/cart" className="hover:text-purple-700">
                   Cart
@@ -169,13 +187,21 @@ const Navbar = () => {
               </>
             )}
             {userType === "user" && (
-              <Link
-                to={`/delivery/${userId}`}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-              >
-                Track Order
-              </Link>
-            )}
+                  <Link
+                    to={`/delivery/${userId}`}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                  >
+                    Track Order
+                  </Link>
+                )}
+                {userType == "delivery_boy" && (
+                  <Link
+                    to={`/custmer/${userId}`}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                  >
+                    Track customer
+                  </Link>
+                )}
             <button
               onClick={openModal}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
@@ -202,7 +228,7 @@ const Navbar = () => {
               
               <>
             
-                {userType !== "vendor" && userType === "delivery_boy" && (
+                {userType !== "vendor" && userType !== "delivery_boy" && (
                   <Link to="/menu" className="hover:text-purple-700">
                     Menu
                   </Link>
@@ -210,7 +236,7 @@ const Navbar = () => {
                 <Link to="/profile" className="hover:text-purple-700">
                   Profile
                 </Link>
-                {userType !== "vendor" && (
+                {userType !== "vendor" && userType !== "delivery_boy" && (
                   <>
                     <Link to="/cart" className="hover:text-purple-700">
                       Cart
