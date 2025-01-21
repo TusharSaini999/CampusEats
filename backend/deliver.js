@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const db = require("./db"); // Your DB configuration file
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 require('dotenv').config();
 
 // Signup for delivery boy
@@ -10,7 +11,6 @@ require('dotenv').config();
 //curl -X POST http://localhost:4000/delivery/signup-delivery-boy -H "Content-Type: application/json" -d "{\"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"password\": \"securepassword123\", \"userType\": \"delivery_boy\"}"
 router.post("/signup-delivery-boy", async (req, res) => {
   const { name, email, password, mobile, userType } = req.body;
-  console.log("Received data:", req.body);
   try {
 
     const [existingDeliveryBoy] = await db
@@ -324,8 +324,39 @@ router.post("/reject-order", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+//for on delivery boy
+router.post("/open-to-work", (req, res) => {
+  const token = req.headers["authorization"];
+  const { isOpen } = req.body; 
+  if (!token) {
+    return res.status(403).json({ message: "No token provided" });
+  }
 
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
 
+    const query = "UPDATE delivery SET current = ? WHERE id = ?";
+    db.query(query, [isOpen ? 1 : 0, userId], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        message: "Open to Work status updated successfully",
+        current: isOpen ? 1 : 0,
+      });
+    });
+  } catch (error) {
+    console.error("JWT verification error:", error.message);
+    return res.status(403).json({ message: "Invalid or expired token" });
+  }
+});
 // API: Mark order as rejected due to no response from the user
 //http://localhost:4000/delivery/reject-order-no-response
 //curl -X POST http://localhost:4000/delivery/reject-order-no-response -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2}"

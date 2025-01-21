@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaSearch, FaBell } from "react-icons/fa";
-import { AiOutlinePlus } from "react-icons/ai";
+// import { AiOutlinePlus } from "react-icons/ai";
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
@@ -9,7 +9,7 @@ const RestaurantDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [showAddDishModal, setShowAddDishModal] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  // const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [vendor_id, setVendorId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -123,9 +123,9 @@ const RestaurantDashboard = () => {
   const toggleAddDishModal = () => {
     setShowAddDishModal(!showAddDishModal);
   };
-  const toggleNotificationModal = () => {
-    setShowNotificationModal(!showNotificationModal);
-  };
+  // const toggleNotificationModal = () => {
+  //   setShowNotificationModal(!showNotificationModal);
+  // };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -244,36 +244,37 @@ const RestaurantDashboard = () => {
       {/* Sidebar */}
       <aside className="w-1/5 bg-black-100 text-black flex flex-col">
         <div className="p-4 border-b border-gray-700">
-          <h1 className="text-2xl font-bold">{profileData.name || 'N/A'}</h1>
-          <p className="text-sm text-gray-400">{profileData.address}</p>
+          <h1 className="text-2xl font-bold">Name: {profileData.name || 'N/A'}</h1>
+          <p className="text-sm text-gray-400">Address: {profileData.address}</p>
+          <p className="text-sm text-gray-400">Moblie No: {profileData.phone}</p>
           <p className="text-sm text-gray-400">Restaurant Id: {profileData.id}</p>
         </div>
         <nav className="flex-grow p-4 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">All Agents</h2>
+            <h2 className="text-lg font-semibold">Order Details</h2>
             <ul className="mt-2 space-y-2">
+            
+            <li className="flex items-center justify-between text-sm">
+                <span>Total Earnings :</span>
+                <span className="text-gray-400">Rs 0</span>
+              </li>
+            {/* <button className="text-gray-600" onClick={toggleNotificationModal}>
+              <FaBell />
+            </button> */}
               <li className="flex items-center justify-between text-sm">
-                <span>Zomato</span>
+                <span>Total Order Completed :</span>
                 <span className="text-gray-400">43 Orders</span>
               </li>
               <li className="flex items-center justify-between text-sm">
-                <span>Swiggy</span>
+                <span>Total Pending Orders :</span>
                 <span className="text-gray-400">21 Orders</span>
               </li>
               <li className="flex items-center justify-between text-sm">
-                <span>Uber Eats</span>
+                <span>Total Rejected Orders :</span>
                 <span className="text-gray-400">10 Orders</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span>Food Panda</span>
-                <span className="text-gray-400">6 Orders</span>
               </li>
             </ul>
           </div>
-          <button className="bg-yellow-500 w-full py-2 rounded-lg mt-4 text-black font-bold flex items-center justify-center space-x-2">
-            <AiOutlinePlus />
-            <span>Add Agent</span>
-          </button>
         </nav>
       </aside>
 
@@ -287,15 +288,11 @@ const RestaurantDashboard = () => {
             </div>
             <input
               type="text"
-              placeholder="Enter token or order ID to search"
+              placeholder="Enter order ID to search"
               className="border border-gray-300 rounded-lg px-4 py-2 w-80"
             />
           </div>
           <div className="flex items-center space-x-4">
-            <label htmlFor="">Total Earnings : Rs 0</label>
-            <button className="text-gray-600" onClick={toggleNotificationModal}>
-              <FaBell />
-            </button>
             <button
               className={`text-white px-4 py-2 rounded-lg ${isOnline ? "bg-green-500" : "bg-red-500"
                 }`}
@@ -307,7 +304,7 @@ const RestaurantDashboard = () => {
         </header>
 
         {/* Notification Modal */}
-        {showNotificationModal && (
+        {/* {showNotificationModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
               <h2 className="text-xl font-bold mb-4">Notifications</h2>
@@ -326,7 +323,7 @@ const RestaurantDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Order List */}
         <section className="p-4">
