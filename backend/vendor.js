@@ -121,6 +121,7 @@ router.post('/update-vendor-status', (req, res) => {
 
 
 // Express endpoint to get vendor status
+//get the vendor status
 router.get('/vendor-status/:vendorId', (req, res) => {
   const { vendorId } = req.params;
 
@@ -139,6 +140,63 @@ router.get('/vendor-status/:vendorId', (req, res) => {
 
     // Return the current status of the vendor
     res.status(200).json({ current: result[0].current });
+  });
+});
+//get orders for vendoer which is confrom payment
+//GET http://localhost:4000/vendors/orders/{vendorId}
+//curl -X GET "http://localhost:4000/vendors/orders/21" -H "Content-Type: application/json"
+
+router.get('/orders/:vendorId', (req, res) => {
+  const vendorId = req.params.vendorId;
+
+  // SQL query to fetch order details
+  const query = `
+    SELECT
+      oi.o_id AS order_item_id,
+      oi.user_id,
+      (SELECT u.name 
+       FROM users u 
+       WHERE u.id = oi.user_id) AS user_name,
+      (SELECT u.phone 
+       FROM users u 
+       WHERE u.id = oi.user_id) AS user_phone,
+      (SELECT o.delivery_address 
+       FROM orders o 
+       WHERE o.id = oi.o_id) AS delivery_address,
+      m.name AS menu_name,
+      m.image_url,
+      oi.quantity,
+      (oi.price * oi.quantity) AS total_price,
+      (SELECT o.payment_status 
+       FROM orders o 
+       WHERE o.id = oi.o_id) AS payment_status,
+      (SELECT o.created_at 
+       FROM orders o 
+       WHERE o.id = oi.o_id) AS order_date
+    FROM 
+      order_items oi
+    INNER JOIN 
+      menu m ON oi.menu_id = m.id
+    WHERE 
+      m.vendor_id = ? 
+      AND oi.o_id IS NOT NULL
+    ORDER BY 
+      order_date DESC;
+`;
+
+
+
+
+
+  // Execute the query
+  db.query(query, [vendorId], (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    // Return the results as JSON
+    res.json({ orders: results });
   });
 });
 

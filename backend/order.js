@@ -1,19 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const db = require("./db");
-//get orders
-//http://localhost:4000/orders/
-router.get("/", async (req, res) => {
-  try {
-    const response = await db
-      .promise()
-      .query("SELECT * FROM orders");
-    res.status(200).json(response[0]);
-  } catch (e) {
-    res.status(400).json(e);
-  }
-});
-
 
 // API to create an order and update order_items
 //curl -X POST "http://localhost:4000/orders/create-order" -H "Content-Type: application/json" -d "{\"user_id\": 14, \"total_price\": 100.50, \"delivery_address\": \"123 Main St, City, Country\", \"customer_latitude\": 40.7128, \"customer_longitude\": -74.0060, \"payment_status\": \"success\"}"

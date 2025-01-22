@@ -21,8 +21,12 @@ const RestaurantDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [profileData, setProfileData] = useState([]);
+  const [userId, setUserId] = useState("");
   const token = localStorage.getItem("token");
-
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("id");
+    setUserId(storedUserId || "");
+  });
   // Fetch the vendor status from the database on component mount or after login
   useEffect(() => {
     const fetchVendorStatus = async () => {
@@ -45,11 +49,11 @@ const RestaurantDashboard = () => {
     fetchVendorStatus();
   }, [vendor_id]);
 
-  
+
 
 
   const toggleOnlineStatus = async () => {
-    const newStatus = isOnline ? 0 : 1; 
+    const newStatus = isOnline ? 0 : 1;
     try {
       const response = await fetch("http://localhost:4000/vendors/update-vendor-status", {
         method: "POST",
@@ -65,7 +69,7 @@ const RestaurantDashboard = () => {
       const data = await response.json();
 
       if (response.ok) {
-        
+
         setIsOnline(!isOnline);
       } else {
         console.error("Error updating status:", data.error);
@@ -97,28 +101,35 @@ const RestaurantDashboard = () => {
       console.error("Error fetching menu:", error);
     }
   };
-
-
   useEffect(() => {
     fetchOurMenu();
   }, [vendor_id]);
-
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch("http://localhost:4000/orders/");
+        const response = await fetch(`http://localhost:4000/vendors/orders/${userId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch orders");
         }
         const data = await response.json();
-        setOrders(data);
+        setOrders(data.orders); // Assuming `data.orders` contains the orders array
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [userId]);
+  const formatDateTime = (dateTime) => {
+    const dateOptions = { day: "numeric", month: "long", year: "numeric" }; // For date only
+    const timeOptions = { hour: "2-digit", minute: "2-digit", hour12: true }; // For time only
+
+    const formattedDate = new Date(dateTime).toLocaleDateString("en-US", dateOptions); // e.g., "21 July 2024"
+    const formattedTime = new Date(dateTime).toLocaleTimeString("en-US", timeOptions); // e.g., "08:45 AM"
+
+    return `${formattedDate} at ${formattedTime}`; // Combines date and time
+  };
+
 
   const toggleAddDishModal = () => {
     setShowAddDishModal(!showAddDishModal);
@@ -144,7 +155,7 @@ const RestaurantDashboard = () => {
     formData.append('price', price);
     formData.append('category', category);
     formData.append('availability', availability);
-    formData.append('image_url', image_url); 
+    formData.append('image_url', image_url);
     try {
       const response = await fetch("http://localhost:4000/menu/post-menu", {
         method: "POST",
@@ -253,12 +264,12 @@ const RestaurantDashboard = () => {
           <div>
             <h2 className="text-lg font-semibold">Order Details</h2>
             <ul className="mt-2 space-y-2">
-            
-            <li className="flex items-center justify-between text-sm">
+
+              <li className="flex items-center justify-between text-sm">
                 <span>Total Earnings :</span>
                 <span className="text-gray-400">Rs 0</span>
               </li>
-            {/* <button className="text-gray-600" onClick={toggleNotificationModal}>
+              {/* <button className="text-gray-600" onClick={toggleNotificationModal}>
               <FaBell />
             </button> */}
               <li className="flex items-center justify-between text-sm">
@@ -341,47 +352,65 @@ const RestaurantDashboard = () => {
 
           {/* Order Rows */}
           <div className="bg-white shadow rounded-lg mb-6">
-            <table className="w-full table-auto">
-              <thead>
-                <tr className="bg-gray-200 text-gray-600 text-sm">
-                  <th className="p-4 text-left">Order ID</th>
-                  <th className="p-4 text-left">User Id</th>
-                  <th className="p-4 text-left">Amount</th>
-                  <th className="p-4 text-left">Status</th>
-                  <th className="p-4 text-left">Delivery Address</th>
-                  <th className="p-4 text-left">Payment Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.length > 0 ? (
-                  orders.map((order) => (
-                    <tr
-                      key={order.id}
-                      className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors"
-                    >
-                      <td className="p-4">{order.id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.total_price}Rs</td>
-                      <td className="p-4">{order.status}</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">
-                        <button className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105">
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center p-4 text-gray-600">
-                      No orders found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+  <table className="w-full table-auto">
+    <thead>
+      <tr className="bg-gray-200 text-gray-600 text-sm">
+        <th className="p-4 text-left">Image</th> {/* Added Image column */}
+        <th className="p-4 text-left">Order Item ID</th>
+        <th className="p-4 text-left">User ID</th>
+        <th className="p-4 text-left">User Name</th>
+        <th className="p-4 text-left">Phone</th>
+        <th className="p-4 text-left">Menu Name</th>
+        <th className="p-4 text-left">Quantity</th>
+        <th className="p-4 text-left">Total Price</th>
+        <th className="p-4 text-left">Delivery Address</th>
+        <th className="p-4 text-left">Payment Status</th>
+        <th className="p-4 text-left">Order Date</th>
+        <th className="p-4 text-left">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {orders.length > 0 ? (
+        orders.map((order) => (
+          <tr
+            key={order.order_item_id}
+            className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors"
+          >
+            <td className="p-4">
+              <img
+                src={order.image_url} // Assuming `image_url` exists for each order
+                alt={order.menu_name}
+                className="w-16 h-16 object-cover rounded-md"
+              />
+            </td>
+            <td className="p-4">{order.order_item_id}</td>
+            <td className="p-4">{order.user_id}</td>
+            <td className="p-4">{order.user_name}</td>
+            <td className="p-4">{order.user_phone}</td>
+            <td className="p-4">{order.menu_name}</td>
+            <td className="p-4">{order.quantity}</td>
+            <td className="p-4">{order.total_price} Rs</td>
+            <td className="p-4">{order.delivery_address}</td>
+            <td className="p-4">{order.payment_status}</td>
+            <td className="p-4">{formatDateTime(order.order_date)}</td>
+            <td className="p-4">
+              <button className="bg-green-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105">
+                View
+              </button>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="11" className="text-center p-4 text-gray-600">
+            No orders found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
         </section>
         {/* Menu Section */}
         <div className="bg-white shadow rounded-lg p-4 mt-6">
@@ -486,8 +515,7 @@ const RestaurantDashboard = () => {
           {/*Our Menu*/}
           <div className="p-4">
             {/* Menu List */}
-            <div className="bg-white shadow rounded-lg p-4">
-              <h2 className="text-xl font-bold">Our Menu</h2>
+            <div>
               <table className="table-auto w-full border-collapse border border-gray-200 mt-4">
                 <thead>
                   <tr className="bg-gray-100 text-left text-gray-700 text-sm">

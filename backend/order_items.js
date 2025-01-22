@@ -36,10 +36,6 @@ router.get("/", async (req, res) => {
 
 
 // Add item to cart
-// http://localhost:4000/order_items/add-to-cart
-//curl -X POST http://localhost:4000/order_items/add-to-cart -H "Content-Type: application/json" -d "{\"order_id\":101,\"menu_id\":1,\"quantity\":1,\"user_id\":1}"
-
-
 router.post("/add-to-cart", async (req, res) => {
   const { order_id, menu_id, quantity, user_id } = req.body; // Extract necessary data
   try {
@@ -56,13 +52,24 @@ router.post("/add-to-cart", async (req, res) => {
     const { name, price } = menuItem[0];
     const total_price = price * quantity;
 
-    // Query to insert or update the item in the order_items table
+    // Check if the item already exists in the cart (with NULL order_id)
+    const [existingItem] = await db
+      .promise()
+      .query(
+        "SELECT * FROM order_items WHERE menu_id = ? AND user_id = ? AND o_id IS NULL",
+        [menu_id, user_id]
+      );
+
+    if (existingItem.length > 0) {
+      return res.status(400).json({
+        error: "Item already in cart. Please update the quantity instead of adding it again.",
+      });
+    }
+
+    // Query to insert the item into the order_items table
     const query = `
       INSERT INTO order_items (order_id, menu_id, quantity, price, item_name, user_id)
-      VALUES (?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE 
-        quantity = quantity + VALUES(quantity),
-        price = VALUES(quantity) * VALUES(price);
+      VALUES (?, ?, ?, ?, ?, ?);
     `;
 
     await db
@@ -77,6 +84,7 @@ router.post("/add-to-cart", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 //http://localhost:4000/order_items/update-quantity/14
 //curl -X PUT "http://localhost:4000/order_items/update-quantity/14" -H "Content-Type: application/json" -d "{\"quantity\": 5}"
