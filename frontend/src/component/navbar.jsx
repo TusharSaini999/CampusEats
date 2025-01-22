@@ -84,31 +84,30 @@ const Navbar = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-  console.log(userType);
   return (
     <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-md">
       {/* Logo */}
       {userType === "vendor" && (
         <Link to="/dashboard" className="text-xl font-bold text-purple-700 sm:text-2xl">
-        CampusEats
-      </Link>
+          CampusEats
+        </Link>
       )}
       {userType === "user" && (
         <Link to="/" className="text-xl font-bold text-purple-700 sm:text-2xl">
-        CampusEats
-      </Link>
+          CampusEats
+        </Link>
       )}
       {userType === "delivery_boy" && (
         <Link to="/delivery-boy-dashboard" className="text-xl font-bold text-purple-700 sm:text-2xl">
-        CampusEats
-      </Link>
+          CampusEats
+        </Link>
       )}
       {!userType && (
         <Link to="/" className="text-xl font-bold text-purple-700 sm:text-2xl">
-        CampusEats
-      </Link>
+          CampusEats
+        </Link>
       )}
-      
+
 
       {/* Search Bar */}
       {userType !== "vendor" && userType !== "delivery_boy" && (
@@ -176,7 +175,7 @@ const Navbar = () => {
             <Link to="/profile" className="hover:text-purple-700">
               Profile
             </Link>
-            {userType !== "vendor" && userType !== "delivery_boy"  && (
+            {userType !== "vendor" && userType !== "delivery_boy" && (
               <>
                 <Link to="/cart" className="hover:text-purple-700">
                   Cart
@@ -186,22 +185,27 @@ const Navbar = () => {
                 </Link>
               </>
             )}
+            {userType !== "users" && userType !== "delivery_boy" && (
+              <Link to="/menuvendoer" className="hover:text-purple-700">
+                Our Menu
+              </Link>
+            )}
             {userType === "user" && (
-                  <Link
-                    to={`/delivery/${userId}`}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                  >
-                    Track Order
-                  </Link>
-                )}
-                {userType == "delivery_boy" && (
-                  <Link
-                    to={`/custmer/${userId}`}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                  >
-                    Track customer
-                  </Link>
-                )}
+              <Link
+                to={`/delivery/${userId}`}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              >
+                Track Order
+              </Link>
+            )}
+            {userType == "delivery_boy" && (
+              <Link
+                to={`/custmer/${userId}`}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              >
+                Track customer
+              </Link>
+            )}
             <button
               onClick={openModal}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
@@ -218,16 +222,16 @@ const Navbar = () => {
           </Link>
         )}
       </div>
-     
+
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md z-10 md:hidden">
           <div className="flex flex-col items-start space-y-4 p-4 text-gray-600">
             <Link to="/recipe-generator">Recipe Generator</Link>
             {isLoggedIn ? (
-              
+
               <>
-            
+
                 {userType !== "vendor" && userType !== "delivery_boy" && (
                   <Link to="/menu" className="hover:text-purple-700">
                     Menu
@@ -245,6 +249,11 @@ const Navbar = () => {
                       Order History
                     </Link>
                   </>
+                )}
+                {userType !== "users" && userType !== "delivery_boy" && (
+                  <Link to="/menuvendoer" className="hover:text-purple-700">
+                    Our Menu
+                  </Link>
                 )}
                 {userType === "user" && (
                   <Link

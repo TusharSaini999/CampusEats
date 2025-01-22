@@ -142,6 +142,8 @@ router.get('/vendor-status/:vendorId', (req, res) => {
     res.status(200).json({ current: result[0].current });
   });
 });
+
+
 //get orders for vendoer which is confrom payment
 //GET http://localhost:4000/vendors/orders/{vendorId}
 //curl -X GET "http://localhost:4000/vendors/orders/21" -H "Content-Type: application/json"
@@ -183,11 +185,6 @@ router.get('/orders/:vendorId', (req, res) => {
     ORDER BY 
       order_date DESC;
 `;
-
-
-
-
-
   // Execute the query
   db.query(query, [vendorId], (err, results) => {
     if (err) {
@@ -200,5 +197,6 @@ router.get('/orders/:vendorId', (req, res) => {
   });
 });
 
+//order taken By Vendor
 
 module.exports = router;

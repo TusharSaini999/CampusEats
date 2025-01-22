@@ -14,6 +14,7 @@ import DeliveryboyDashboard from "./pages/DeliveryboyDashboard";
 import PaymentConfirmation from "./pages/PaymentConfirmation";
 import SearchResults from "./pages/SearchResults";
 import OrderHistory from "./pages/order-histery";
+import Owermenu from "./pages/vendor_menu";
 
 function App() {
   return (
@@ -28,12 +29,13 @@ function App() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/profile" element={<CustomerProfile />} />
           <Route path="/recipe-generator" element={<RecipeGenerator />} />
-          <Route path="/delivery/:customerId" element={<DeliveryTrackingPage/>} />
-          <Route path="/custmer/:deliveryid" element={<Castmertracking/>} />
-          <Route path="/delivery-boy-dashboard" element={<DeliveryboyDashboard />}/>
+          <Route path="/delivery/:customerId" element={<DeliveryTrackingPage />} />
+          <Route path="/custmer/:deliveryid" element={<Castmertracking />} />
+          <Route path="/delivery-boy-dashboard" element={<DeliveryboyDashboard />} />
           <Route path="/confirm-order" element={<PaymentConfirmation />} />
           <Route path="/search-results" element={<SearchResults />} />
           <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/menuvendoer" element={<Owermenu />} />
         </Routes>
       </Router>
     </>

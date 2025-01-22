@@ -95,7 +95,8 @@ const Menu = () => {
         setShowModal(true);
       }
       else {
-        console.error("Failed to add item to cart");
+        setModalMessage("Menu item not found");
+        setShowModal(true);
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
