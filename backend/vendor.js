@@ -174,7 +174,8 @@ router.get('/orders/:vendorId', (req, res) => {
        WHERE o.id = oi.o_id) AS payment_status,
       (SELECT o.created_at 
        FROM orders o 
-       WHERE o.id = oi.o_id) AS order_date
+       WHERE o.id = oi.o_id) AS order_date,
+       (SELECT ov.status FROM order_vender ov WHERE ov.order_id = oi.o_id && ov.v_id=m.vendor_id) AS vender_status
     FROM 
       order_items oi
     INNER JOIN 
@@ -197,6 +198,185 @@ router.get('/orders/:vendorId', (req, res) => {
   });
 });
 
-//order taken By Vendor
+// Order taken by Vendor
+// Endpoint: http://localhost:4000/vendors/assign-order
+
+router.post('/assign-order', (req, res) => {
+  const { vendor_id, order_id, status, message } = req.body;
+
+  // Step 1: Validate Inputs
+  if (!vendor_id || !order_id || !status) {
+    return res.status(400).json({ error: 'Vendor ID, Order ID, and Status are required.' });
+  }
+
+  // Step 2: Check if the order belongs to the vendor
+  const queryCheckOrderVendor = `
+    SELECT
+      oi.o_id AS order_item_id,
+      (SELECT o.delivery_address FROM orders o WHERE o.id = oi.o_id) AS delivery_address
+    FROM 
+      order_items oi
+    INNER JOIN 
+      menu m ON oi.menu_id = m.id
+    WHERE 
+      m.vendor_id = ? 
+      AND oi.o_id = ?;
+  `;
+
+  db.query(queryCheckOrderVendor, [vendor_id, order_id], (error, orderVendorResult) => {
+    if (error) {
+      console.error('Error fetching order vendor:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    if (orderVendorResult.length === 0) {
+      return res.status(404).json({ error: 'Order does not belong to the specified vendor.' });
+    }
+
+    // Step 3: Check if the order-vendor pair already exists
+    const queryCheckPair = `
+      SELECT * 
+      FROM order_vender 
+      WHERE order_id = ? AND v_id = ?;
+    `;
+
+    db.query(queryCheckPair, [order_id, vendor_id], (error, pairCheckResult) => {
+      if (error) {
+        console.error('Error checking order-vendor pair:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+
+      if (pairCheckResult.length > 0) {
+        // Step 4: If pair exists, update the status
+        const queryUpdateStatus = `
+          UPDATE order_vender
+          SET status = ?, mes = ?
+          WHERE order_id = ? AND v_id = ?;
+        `;
+
+        db.query(queryUpdateStatus, [status, message || null, order_id, vendor_id], (error) => {
+          if (error) {
+            console.error('Error updating order status:', error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+          }
+
+          return res.status(200).json({
+            message: 'Order status successfully updated.',
+            order_id,
+            vendor_id,
+            status,
+          });
+        });
+      } else {
+        // Step 5: If pair does not exist, insert a new record
+        const queryInsert = `
+          INSERT INTO order_vender (order_id, v_id, status, mes) 
+          VALUES (?, ?, ?, ?);
+        `;
+
+        db.query(queryInsert, [order_id, vendor_id, status, message || null], (error) => {
+          if (error) {
+            console.error('Error assigning order to vendor:', error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+          }
+
+          return res.status(201).json({
+            message: 'Order successfully assigned to the vendor.',
+            order_id,
+            vendor_id,
+            status,
+          });
+        });
+      }
+    });
+  });
+});
+
+// Endpoint to fetch the current status of an order for a vendor
+//http://localhost:4000/vendors/order-status
+// Fetch order status
+router.get('/order-status', (req, res) => {
+  const { order_id, vendor_id } = req.query;
+
+  if (!order_id || !vendor_id) {
+    return res.status(400).json({ error: 'Order ID and Vendor ID are required.' });
+  }
+
+
+  db.query(
+    'SELECT status FROM order_vender WHERE order_id = ? AND v_id = ?',
+    [order_id, vendor_id],
+    (error, results) => {
+      if (error) {
+        console.error('Error fetching order status:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Order not assigned to this vendor.' });
+      }
+
+      // Extract the status from the results
+      const status = results[0].status;
+      return res.status(200).json({ status });
+    }
+  );
+});
+
+//seacrch on order using order id
+//curl -X GET "http://localhost:4000/vendors/search-orders/21?orderId=34" -H "Content-Type: application/json"
+router.get('/search-orders/:vendorId', (req, res) => {
+  const vendorId = req.params.vendorId;
+  const orderId = req.query.orderId; 
+
+  const query = `
+    SELECT
+      oi.o_id AS order_item_id,
+      oi.user_id,
+      (SELECT u.name 
+       FROM users u 
+       WHERE u.id = oi.user_id) AS user_name,
+      (SELECT u.phone 
+       FROM users u 
+       WHERE u.id = oi.user_id) AS user_phone,
+      (SELECT o.delivery_address 
+       FROM orders o 
+       WHERE o.id = oi.o_id) AS delivery_address,
+      m.name AS menu_name,
+      m.image_url,
+      oi.quantity,
+      (oi.price * oi.quantity) AS total_price,
+      (SELECT o.payment_status 
+       FROM orders o 
+       WHERE o.id = oi.o_id) AS payment_status,
+      (SELECT o.created_at 
+       FROM orders o 
+       WHERE o.id = oi.o_id) AS order_date,
+      (SELECT ov.status FROM order_vender ov WHERE ov.order_id = oi.o_id && ov.v_id=m.vendor_id) AS vender_status
+    FROM 
+      order_items oi
+    INNER JOIN 
+      menu m ON oi.menu_id = m.id
+    WHERE 
+      m.vendor_id = ? 
+      AND oi.o_id = ?  -- Match the order ID provided
+    ORDER BY 
+      order_date DESC;
+  `;
+
+  db.query(query, [vendorId, orderId], (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No orders found with the provided Order ID.' });
+    }
+
+
+    res.json({ result: results });
+  });
+});
 
 module.exports = router;
