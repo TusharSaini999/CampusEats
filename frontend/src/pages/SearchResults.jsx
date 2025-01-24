@@ -158,13 +158,24 @@ const [modalMessage, setModalMessage] = useState("");
                     Rs {result.price}
                   </p>
 
-                  {/* Add to Cart Button */}
+                  
+                  {/* Handle Availability and Vendor Current Status */}
+                {result.availability === 0 ? (
+                  <p className="text-red-500 text-sm font-semibold mt-4">
+                    Out of Stock
+                  </p>
+                ) : result.current === 0 ? (
+                  <p className="text-gray-500 text-sm font-semibold mt-4">
+                    Vendor is unavailable at this moment
+                  </p>
+                ) : (
                   <button
                     onClick={() => handleAddToCart(result.id)}
-                    className="w-full mt-4 bg-purple-500 text-white text-sm py-2 px-3 rounded-md hover:bg-purple-600 transition"
+                    className="w-full mt-4 bg-purple-500 text-white text-sm py-2 px-3 rounded-md hover:bg-purple-600"
                   >
                     Add to Cart
                   </button>
+                )}
                 </div>
               </div>
             ))}

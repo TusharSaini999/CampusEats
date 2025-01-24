@@ -74,7 +74,6 @@ const Navbar = () => {
   const openModal = () => {
     setIsLogoutModalOpen(true);
   };
-
   const handleSearch = (e) => {
     e.preventDefault();
     navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
@@ -185,7 +184,7 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            {userType !== "users" && userType !== "delivery_boy" && (
+            {userType !== "user" && userType !== "delivery_boy" && (
               <Link to="/menuvendoer" className="hover:text-purple-700">
                 Our Menu
               </Link>
@@ -250,7 +249,7 @@ const Navbar = () => {
                     </Link>
                   </>
                 )}
-                {userType !== "users" && userType !== "delivery_boy" && (
+                {userType !== "user" && userType !== "delivery_boy" && (
                   <Link to="/menuvendoer" className="hover:text-purple-700">
                     Our Menu
                   </Link>

@@ -41,7 +41,7 @@ const upload = multer({ storage: storage }).single('image_url');
 router.post('/post-menu', upload, async (req, res) => {
   console.log(req.file);
 
-  const { vendor_id, name, description, price, category, availability} = req.body;
+  const { vendor_id, name, description, price, category, availability } = req.body;
 
   const image_url = req.file ? `images/${req.file.filename}` : null;
 
@@ -74,7 +74,16 @@ router.post('/post-menu', upload, async (req, res) => {
 //http://localhost:4000/menu/
 router.get("/", async (req, res) => {
   try {
-    const response = await db.promise().query(`SELECT * FROM menu WHERE availability > 0 AND vendor_id IN (SELECT id FROM vendors WHERE current=1)`);
+    const response = await db.promise().query(`SELECT 
+    menu.*,
+    vendors.current
+FROM 
+    menu
+JOIN 
+    vendors 
+ON 
+    menu.vendor_id = vendors.id;
+`);
     res.status(200).json(response[0]);
   } catch (e) {
     res.status(400).json(e);
@@ -133,16 +142,14 @@ router.delete("/delete-menu/:id", async (req, res) => {
 // Search API for menu items
 //http://localhost:4000/menu/search-menu/pizza
 router.get("/search-menu/:query", (req, res) => {
-  const {query} = req.params;
+  const { query } = req.params;
 
   if (!query) {
     return res.status(400).json({ error: "Query parameter is required." });
   }
 
   const sql = `
-    SELECT * 
-    FROM menu 
-    WHERE (availability > 0 AND vendor_id IN (SELECT id FROM vendors WHERE current=1)) AND (name LIKE ? OR category LIKE ?)`;
+  SELECT menu.*, vendors.current FROM menu JOIN vendors ON menu.vendor_id = vendors.id WHERE menu.name LIKE ? OR menu.category LIKE ?`;
   const values = [`%${query}%`, `%${query}%`];
 
   db.query(sql, values, (err, results) => {
