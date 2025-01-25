@@ -15,6 +15,7 @@ import PaymentConfirmation from "./pages/PaymentConfirmation";
 import SearchResults from "./pages/SearchResults";
 import OrderHistory from "./pages/order-histery";
 import Owermenu from "./pages/vendor_menu";
+import Orderaction from "./pages/order_dilivery";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/search-results" element={<SearchResults />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/menuvendoer" element={<Owermenu />} />
+          <Route path="/order-dilivery/:orderId" element={<Orderaction />} />
         </Routes>
       </Router>
     </>

@@ -256,6 +256,7 @@ router.get("/profile", (req, res) => {
           address: user.address,
           businessName: user.business_name || "N/A",
           image: user.image || "/profile/main.jpg",
+          total_en: user.total_en,
         });
       } else if (userType === "user") {
         res.json({

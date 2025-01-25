@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const db = require("./db");
 const router = express.Router();
-
+const crypto = require('crypto');
 //Vendor signup
 //http://localhost:4000/vendors/signup-vendor
 router.post("/signup-vendor", async (req, res) => {
@@ -379,4 +379,128 @@ router.get('/search-orders/:vendorId', (req, res) => {
   });
 });
 
+//genrate otp api
+//http://localhost:4000/vendors/generate-otp
+//curl -X POST "http://localhost:4000/vendors/generate-otp" -H "Content-Type: application/json" -d "{\"order_id\": 2, \"v_id\": 21}"
+
+const generateOTP = () => {
+  const otp = crypto.randomInt(100000, 999999); // Generate a 6-digit OTP
+  return otp;
+};
+
+router.post('/generate-otp', (req, res) => {
+  const { order_id, v_id } = req.body;
+  if (!order_id || !v_id) {
+    return res.status(400).json({ message: 'order_id and v_id are required' });
+  }
+
+  const otp = generateOTP(); 
+
+  const query = 'UPDATE order_vender SET otp = ? WHERE order_id = ? AND v_id = ?';
+  db.query(query, [otp, order_id, v_id], (err, result) => {
+    if (err) {
+      console.error('Error updating OTP:', err);
+      return res.status(500).json({ message: 'Failed to generate OTP' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Order ID and Vendor ID not found' });
+    }
+
+    res.json({ otp: otp, message: 'OTP generated successfully' });
+  });
+});
+
+//otp verfy and close the order
+//curl -X POST http://localhost:4000/vendors/verify-otp -H "Content-Type: application/json" -d "{"order_id":12, "v_id":21, "otp":787141}"
+
+router.post('/verify-otp', (req, res) => {
+  const { order_id, v_id, otp } = req.body;  // Get order_id, vendor_id, and otp from request body
+  if (!order_id || !v_id || !otp) {
+    return res.status(400).json({ message: 'order_id, v_id, and otp are required' });
+  }
+
+  // Query to fetch the current status of the order for the given order_id and v_id from the order_vender table
+  const statusQuery = 'SELECT status FROM order_vender WHERE order_id = ? AND v_id = ?';
+  db.query(statusQuery, [order_id, v_id], (err, results) => {
+    if (err) {
+      console.error('Error fetching order status:', err);
+      return res.status(500).json({ message: 'Failed to fetch order status' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Order not found for this vendor' });
+    }
+
+    const currentStatus = results[0].status;
+
+    // Check if the order status is 'Out for Pickup'
+    if (currentStatus !== 'Out for Pickup') {
+      return res.status(401).json({ message: 'Order is not in "Out for Pickup" status' });
+    }
+
+    // Query to fetch the OTP for the given order_id and v_id from the order_vender table
+    const otpQuery = 'SELECT otp FROM order_vender WHERE order_id = ? AND v_id = ?';
+    db.query(otpQuery, [order_id, v_id], (err, otpResults) => {
+      if (err) {
+        console.error('Error verifying OTP:', err);
+        return res.status(500).json({ message: 'Failed to verify OTP' });
+      }
+
+      if (otpResults.length === 0) {
+        return res.status(404).json({ message: 'OTP not found for this order and vendor' });
+      }
+
+      const storedOtp = otpResults[0].otp;
+
+      // Check if the OTP matches
+      if (storedOtp != otp) {
+        return res.status(400).json({ message: 'Invalid OTP' });
+      }
+
+      // Calculate the total price of the order items
+      const totalPriceQuery = `
+        SELECT SUM(oi.price * oi.quantity) AS total_price
+        FROM order_items oi
+        INNER JOIN menu m ON oi.menu_id = m.id
+        WHERE oi.o_id = ? AND m.vendor_id = ?;
+      `;
+
+      db.query(totalPriceQuery, [order_id, v_id], (err, priceResults) => {
+        if (err) {
+          console.error('Error calculating total price:', err);
+          return res.status(500).json({ message: 'Failed to calculate total price' });
+        }
+
+        if (priceResults.length === 0) {
+          return res.status(404).json({ message: 'Order items not found for this vendor' });
+        }
+
+        const totalPrice = priceResults[0].total_price;
+
+        // Update order_vender status to 'complete'
+        const updateStatusQuery = "UPDATE order_vender SET status = 'Completed' WHERE (order_id = ?) and (v_id = ?)";
+
+        db.query(updateStatusQuery, [order_id, v_id], (err, result) => {
+          if (err) {
+            console.error('Error updating order_vender status:', err);
+            return res.status(500).json({ message: 'Failed to update order status' });
+          }
+
+          // Update the vendor's total_en with the total price
+          const updateVendorQuery = 'UPDATE vendors SET total_en = total_en + ? WHERE id = ?';
+          db.query(updateVendorQuery, [totalPrice, v_id], (err, vendorResult) => {
+            if (err) {
+              console.error('Error updating vendor total_en:', err);
+              return res.status(500).json({ message: 'Failed to update vendor total_en' });
+            }
+
+            // Send success response
+            res.json({ message: 'OTP verified and order completed successfully' });
+          });
+        });
+      });
+    });
+  });
+});
 module.exports = router;

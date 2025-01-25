@@ -141,27 +141,24 @@ router.delete("/delete-delivery-boy/:id", async (req, res) => {
 });
 
 // Get all pending orders for delivery boys
-// GET http://localhost:4000/delivery/pending-orders?deliveryBoyId=Id
+// GET http://localhost:4000/delivery/pending-orders
 //curl -X GET "http://localhost:4000/delivery/pending-orders?deliveryBoyId=2"
-
-
 router.get("/pending-orders", async (req, res) => {
-  const { deliveryBoyId } = req.query; // Get delivery boy ID from query parameters (though it's not used for filtering)
-
   try {
-    // Query to fetch pending orders along with vendor name and customer name
+    // Query to fetch pending orders along with customer name
     const [orders] = await db.promise().query(
       `SELECT 
-         o.id AS order_id, 
-         v.name AS vendor_name, 
-         u.name AS customer_name, 
-         o.created_at AS order_date, 
-         o.total_price AS order_amount, 
-         o.status AS order_status
-       FROM orders o
-       JOIN vendors v ON o.vendor_id = v.id
-       JOIN users u ON o.user_id = u.id
-       WHERE o.status = 'pending'`
+        o.id AS order_id,
+        u.id AS customer_id,
+        u.name AS customer_name, 
+        o.created_at AS order_date, 
+        o.total_price AS order_amount,
+        o.delivery_address AS delivery_address, 
+        o.status AS order_status
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+      WHERE o.status = 'pending' AND o.delivery_boy_id IS NULL
+      ORDER BY o.id DESC;`    
     );
 
     // Check if no pending orders are found
@@ -169,7 +166,7 @@ router.get("/pending-orders", async (req, res) => {
       return res.status(404).json({ message: "No pending orders found" });
     }
 
-    // Return the fetched orders with additional details
+    // Return the fetched orders
     res.status(200).json({ pendingOrders: orders });
   } catch (err) {
     console.error("Error fetching pending orders:", err);
@@ -177,6 +174,47 @@ router.get("/pending-orders", async (req, res) => {
   }
 });
 
+// Get all orders for a specific delivery boy (no status filter)
+// GET http://localhost:4000/delivery/all-orders
+// Example usage: curl -X GET "http://localhost:4000/delivery/all-orders?deliveryBoyId=2"
+router.get("/all-orders", async (req, res) => {
+  try {
+    const { deliveryBoyId } = req.query;
+
+    // Validate deliveryBoyId parameter
+    if (!deliveryBoyId) {
+      return res.status(400).json({ error: "Delivery boy ID is required" });
+    }
+
+    // Query to fetch all orders for the delivery boy
+    const [orders] = await db.promise().query(
+      `SELECT 
+        o.id AS order_id,
+        u.id AS customer_id,
+        u.name AS customer_name, 
+        o.created_at AS order_date, 
+        o.total_price AS order_amount,
+        o.delivery_address AS delivery_address, 
+        o.status AS order_status
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+      WHERE o.delivery_boy_id = ?
+      ORDER BY o.id DESC;`,
+      [deliveryBoyId]
+    );
+
+    // Check if no orders are found
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "No orders found for this delivery boy" });
+    }
+
+    // Return the fetched orders
+    res.status(200).json({ orders });
+  } catch (err) {
+    console.error("Error fetching orders for delivery boy:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 
 // Accept an order for delivery
@@ -491,6 +529,107 @@ router.get("/delivery-details", async (req, res) => {
     console.error("Error retrieving delivery details:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+
+//get order for delivery boy
+//http://localhost:4000/delivery/orders_boy_deliver/48
+router.get('/orders_boy_deliver/:orderId', (req, res) => {
+  const orderId = req.params.orderId;  // Get the order ID from the URL parameter
+
+  const query = `
+    SELECT 
+        o.id AS order_id,
+        u.id AS user_id,
+        u.name AS user_name,
+        u.email AS user_email,
+        u.phone AS user_phone,
+        GROUP_CONCAT(DISTINCT CONCAT(v.id, ':', v.name, '(', IFNULL(ov.status, 'Pending'), ')') SEPARATOR ', ') AS vendors,
+        GROUP_CONCAT(DISTINCT CONCAT(v.name, ' : ', IFNULL(v.address, 'NULL')) SEPARATOR ', ') AS vendor_addresses,
+        GROUP_CONCAT(DISTINCT CONCAT(v.name, ' : ', IFNULL(v.phone, 'NULL')) SEPARATOR ', ') AS vendor_phones,
+        GROUP_CONCAT(DISTINCT CONCAT(oi.item_name, ' x', oi.quantity, ' @', oi.price, ' INR (Vendor: ', v.name, ')') SEPARATOR '; ') AS items,
+        o.total_price,
+        o.payment_status,
+        o.status,
+        o.delivery_address,
+        o.created_at
+    FROM 
+        orders o
+    INNER JOIN 
+        users u ON o.user_id = u.id
+    LEFT JOIN 
+        order_items oi ON oi.o_id = o.id
+    LEFT JOIN 
+        menu m ON oi.menu_id = m.id
+    LEFT JOIN 
+        vendors v ON m.vendor_id = v.id
+    LEFT JOIN 
+        order_vender ov ON o.id = ov.order_id AND v.id = ov.v_id
+    WHERE 
+        o.id = ?  -- Use the orderId as a parameter to filter the order
+    GROUP BY 
+        o.id
+    ORDER BY 
+        o.created_at DESC
+  `;
+
+  // Execute the query with the provided orderId
+  db.query(query, [orderId], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const order = result[0]; // Only one order will be returned due to the WHERE clause
+
+    const vendors = order.vendors ? order.vendors.split(', ').map(v => {
+      const [vendorId, vendorNameAndStatus] = v.split(':');
+      const vendorName = vendorNameAndStatus.split('(')[0]?.trim() || 'Unknown';
+      const status = vendorNameAndStatus.split('(')[1]?.replace(')', '') || 'Pending';
+
+      const vendorIndex = order.vendors.split(', ').indexOf(v);
+      const address = (order.vendor_addresses.split(', ')[vendorIndex]?.split(' : ')[1] || 'NULL').trim();
+      const phone = (order.vendor_phones.split(', ')[vendorIndex]?.split(' : ')[1] || 'NULL').trim();
+
+      return {
+        name: vendorName,
+        status: status,
+        address: address,
+        phone: phone,
+      };
+    }) : [];
+
+    const items = order.items ? order.items.split('; ').map(item => {
+      const [itemName, itemDetails] = item.split(' x');
+      const [quantity, priceAndVendor] = itemDetails ? itemDetails.split(' @') : ['0', '0 INR (Vendor: Unknown)'];
+      const [price, vendor] = priceAndVendor.split(' INR (Vendor: ');
+      return {
+        name: itemName?.trim() || 'Unknown',
+        quantity: parseInt(quantity?.trim()) || 0,
+        price: parseInt(price?.trim()) || 0,
+        vendor: vendor?.replace(')', '')?.trim() || 'Unknown',
+      };
+    }) : [];
+
+    const formattedOrder = {
+      order_id: order.order_id,
+      user_name: order.user_name,
+      user_email: order.user_email,
+      user_phone: order.user_phone,
+      vendors: vendors,
+      items: items,
+      total_price: order.total_price,
+      status: order.payment_status,
+      dstatus: order.status,
+      delivery_address: order.delivery_address,
+      created_at: order.created_at,
+    };
+
+    res.json(formattedOrder);
+  });
 });
 
 module.exports = router;

@@ -1,33 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 const DeliveryboyDashboard = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      orderId: "000134",
-      restaurantName: "Pizza Hut",
-      restaurantAddress: "123 Main Street, City Center",
-      customerName: "John Doe",
-      customerAddress: "456 Elm Street, Downtown",
-      orderDateTime: "2024-06-17T12:55:00",
-      total: "30.80",
-      status: "Pending",
-      otp: "1234",
-    },
-    {
-      id: 2,
-      orderId: "000133",
-      restaurantName: "Burger King",
-      restaurantAddress: "789 Oak Street, Food Court",
-      customerName: "Jane Smith",
-      customerAddress: "101 Pine Street, Suburb",
-      orderDateTime: "2024-06-17T13:30:00",
-      total: "221.60",
-      status: "Pending",
-      otp: "5678",
-    },
-  ]);
+  const navigate = useNavigate();
   const [deliveryDetails, setDeliveryDetails] = useState({
     revenue: 0,
     totalDeliveries: 0,
@@ -35,13 +10,11 @@ const DeliveryboyDashboard = () => {
     pendingOrderCount: 0,
     rejectedOrderCount: 0,
   });
+  const [orders, setOrders] = useState([]);
+  const [allorders, setAllOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [otpInput, setOtpInput] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOtpDialog, setShowOtpDialog] = useState(false);
-  const [actionType, setActionType] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
   const [userId, setUserId] = useState("");
   const token = localStorage.getItem("token");
   const [userType, setUserType] = useState("");
@@ -53,14 +26,14 @@ const DeliveryboyDashboard = () => {
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
   });
-
+  
   useEffect(() => {
     // Function to fetch delivery details
 
     const fetchDeliveryDetails = async () => {
       try {
         const user_id = userId;
-        
+
         const response = await axios.get(`http://localhost:4000/delivery/delivery-details?deliveryBoyId=${user_id}`);
         setDeliveryDetails(response.data.data);
       } catch (error) {
@@ -68,10 +41,7 @@ const DeliveryboyDashboard = () => {
       }
     };
     fetchDeliveryDetails();
-    const intervalId = setInterval(fetchDeliveryDetails, 5000);
-    return () => clearInterval(intervalId);
-  }, [userId]);
-
+  }, [userId,deliveryDetails]);
   useEffect(() => {
     localStorage.setItem("openToWork", JSON.stringify(openToWork));
   }, [openToWork]);
@@ -99,7 +69,8 @@ const DeliveryboyDashboard = () => {
 
     fetchUserProfile();
   }, [token]); // Dependency on token
-
+  
+  
   const toggleOpenToWork = async (isOpen, token) => {
     try {
       const response = await axios.post(
@@ -125,68 +96,62 @@ const DeliveryboyDashboard = () => {
     // Call the API to update the status in the database
     await toggleOpenToWork(newStatus, token);
   };
-  const openOtpDialog = (order, action) => {
-    setSelectedOrder(order);
-    setShowOtpDialog(true);
-    setActionType(action);
-    setOtpInput("");
-  };
 
-  const closeOtpDialog = () => {
-    setShowOtpDialog(false);
-    setSelectedOrder(null);
-    setActionType("");
-  };
-
-  const handleOtpVerification = () => {
-    if (selectedOrder) {
-      if (otpInput === selectedOrder.otp) {
-        const newStatus = actionType === "accept" ? "Accepted" : "Cancelled";
-        updateOrderStatus(selectedOrder.id, newStatus);
-        showModalMessage(`Order ${newStatus} Successfully!`);
-      } else {
-        showModalMessage("Invalid OTP. Please try again.");
-      }
-      closeOtpDialog();
-    }
-  };
-
-  // Show Modal Message
-  const showModalMessage = (message) => {
-    setModalMessage(message);
-    setShowModal(true);
-    setTimeout(() => setShowModal(false), 3000);
-  };
-
-  // Update Order Status
-  const updateOrderStatus = (id, newStatus) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
-  };
-
-  // Take for Delivery
-  const takeForDelivery = (order) => {
-    updateOrderStatus(order.id, "Out for Delivery");
-    showModalMessage("Order taken for delivery!");
-  };
 
   // Format Date and Time
-  const formatDateTime = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    return new Intl.DateTimeFormat("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(date);
+  const formatDateTime = (dateString) => {
+    const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+    const date = new Date(dateString);
+    return `${date.toLocaleDateString("en-IN", options)} ${date.toLocaleTimeString("en-IN")}`;
   };
+  
+  useEffect(() => {
+    const fetchPendingOrders = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/delivery/pending-orders`
+        );
+        setOrders(response.data.pendingOrders);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch pending orders");
+        setLoading(false);
+      }
+    };
 
-  const filteredOrders = orders.filter((order) =>
-    order.orderId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    fetchPendingOrders();
+  }, [orders]);
+  
+  useEffect(() => {
+    const fetchDeliverOrders = async () => {
+      if(!userId){
+        return;
+      }
+      try {
+        console.log("Fetching orders for deliveryBoyId:", userId); // Debugging log
+        const response = await axios.get(
+          `http://localhost:4000/delivery/all-orders?deliveryBoyId=${userId}`
+        );
+        setAllOrders(response.data.orders);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching delivery details:", err.response?.data || err.message);
+        setError("Failed to fetch orders");
+        setLoading(false);
+      }
+    };
+  
+    fetchDeliverOrders();
+  }, [userId,allorders]);
+  
 
+  if (loading) {
+    return <div className="text-center p-4">Loading...</div>;
+  }
 
+  if (error) {
+    return <div className="text-center p-4 text-red-500">{error}</div>;
+  }
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -254,115 +219,102 @@ const DeliveryboyDashboard = () => {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="min-w-full table-auto">
-            <thead className="bg-purple-600 text-white">
-              <tr>
-                {[
-                  "Order ID",
-                  "Restaurant",
-                  "Customer",
-                  "Order Date",
-                  "Amount",
-                  "Status",
-                  "Actions",
-                ].map((head) => (
-                  <th key={head} className="py-3 px-4 text-left">
-                    {head}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-gray-50 border-b transition-all duration-300"
-                >
-                  <td className="py-3 px-4">{order.orderId}</td>
-                  <td className="py-3 px-4">{order.restaurantName}</td>
-                  <td className="py-3 px-4">{order.customerName}</td>
-                  <td className="py-3 px-4">
-                    {formatDateTime(order.orderDateTime)}
-                  </td>
-                  <td className="py-3 px-4">₹{order.total}</td>
-                  <td className="py-3 px-4">{order.status}</td>
-                  <td className="py-3 px-4">
-                    <button
-                      className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
-                      onClick={() => openOtpDialog(order, "accept")}
-                    >
-                      ✅
-                    </button>
-                    <button
-                      className="mr-3 text-red-600 text-xl hover:scale-110 transition-all"
-                      onClick={() => openOtpDialog(order, "cancel")}
-                    >
-                      ❌
-                    </button>
-                    <button
-                      className="text-blue-600 text-xl hover:scale-110 transition-all"
-                      onClick={() => takeForDelivery(order)}
-                    >
-                      🚚
-                    </button>
-                  </td>
+        <div>
+          <h2 className="text-2xl font-bold mb-4">New Order</h2>
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead className="bg-purple-600 text-white">
+                <tr>
+                  {[
+                    "Order ID",
+                    "Customer ID",
+                    "Customer Name",
+                    "Order Date",
+                    "Amount",
+                    "Delivery Address",
+                    "Status",
+                    "Actions",
+                  ].map((head) => (
+                    <th key={head} className="py-3 px-4 text-left">
+                      {head}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr
+                    key={order.order_id}
+                    className="hover:bg-gray-50 border-b transition-all duration-300"
+                  >
+                    <td className="py-3 px-4">{order.order_id}</td>
+                    <td className="py-3 px-4">{order.customer_id}</td>
+                    <td className="py-3 px-4">{order.customer_name}</td>
+                    <td className="py-3 px-4">{formatDateTime(order.order_date)}</td>
+                    <td className="py-3 px-4">₹{order.order_amount}</td>
+                    <td className="py-3 px-4">{order.delivery_address}</td>
+                    <td className="py-3 px-4">{order.order_status}</td>
+                    <td className="py-3 px-4">
+                      <button
+                        className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
+                        onClick={() => navigate(`/order-dilivery/${order.order_id}`)}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <h2 className="text-2xl font-bold mb-4 mt-4">Order</h2>
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead className="bg-purple-600 text-white">
+                <tr>
+                  {[
+                    "Order ID",
+                    "Customer ID",
+                    "Customer Name",
+                    "Order Date",
+                    "Amount",
+                    "Delivery Address",
+                    "Status",
+                    "Actions",
+                  ].map((head) => (
+                    <th key={head} className="py-3 px-4 text-left">
+                      {head}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {allorders.map((allorder) => (
+                  <tr
+                    key={allorder.order_id}
+                    className="hover:bg-gray-50 border-b transition-all duration-300"
+                  >
+                    <td className="py-3 px-4">{allorder.order_id}</td>
+                    <td className="py-3 px-4">{allorder.customer_id}</td>
+                    <td className="py-3 px-4">{allorder.customer_name}</td>
+                    <td className="py-3 px-4">{formatDateTime(allorder.order_date)}</td>
+                    <td className="py-3 px-4">₹{allorder.order_amount}</td>
+                    <td className="py-3 px-4">{allorder.delivery_address}</td>
+                    <td className="py-3 px-4">{allorder.order_status}</td>
+                    <td className="py-3 px-4">
+                      <button
+                        className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
+                        onClick={() => navigate(`/order-dilivery/${allorder.order_id}`)}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        {/* OTP Dialog */}
-        <AnimatePresence>
-          {showOtpDialog && (
-            <motion.div
-              className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                className="bg-white p-6 rounded shadow"
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
-              >
-                <h3 className="text-xl mb-4">Enter OTP</h3>
-                <input
-                  type="text"
-                  value={otpInput}
-                  onChange={(e) => setOtpInput(e.target.value)}
-                  className="border p-2 w-full mb-4"
-                  placeholder="Enter OTP"
-                />
-                <button
-                  onClick={handleOtpVerification}
-                  className="bg-purple-600 text-white px-4 py-2 rounded mr-2"
-                >
-                  Submit
-                </button>
-                <button onClick={closeOtpDialog} className="text-gray-600">
-                  Cancel
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Notification Modal */}
-        <AnimatePresence>
-          {showModal && (
-            <motion.div
-              className="fixed bottom-4 right-4 bg-purple-600 text-white p-4 rounded shadow"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
-              {modalMessage}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
