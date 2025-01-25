@@ -110,7 +110,7 @@ const RestaurantDashboard = () => {
     console.log('Selected Order:', selectedOrder);
     console.log('User ID:', userId);
     console.log('OTP:', orderOtp);
-  
+
     axios
       .post("http://localhost:4000/vendors/verify-otp", {
         order_id: selectedOrder,
@@ -127,7 +127,7 @@ const RestaurantDashboard = () => {
         setErrorMessage("Invalid OTP or unable to complete order.");
       });
   };
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(""); // Resetting selectedOrder
