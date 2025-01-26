@@ -24,33 +24,30 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '753b858e-d168-11ef-81c1-16d815805ca9:1-972';
 
 --
--- Table structure for table `payments`
+-- Table structure for table `order_vender`
 --
 
-DROP TABLE IF EXISTS `payments`;
+DROP TABLE IF EXISTS `order_vender`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `payments` (
-  `id` int NOT NULL AUTO_INCREMENT,
+CREATE TABLE `order_vender` (
   `order_id` int NOT NULL,
-  `payment_method` varchar(50) NOT NULL,
-  `transaction_id` varchar(100) DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `payment_status` varchar(50) DEFAULT 'pending',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `order_id` (`order_id`),
-  CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE
+  `v_id` int NOT NULL,
+  `status` varchar(50) DEFAULT NULL,
+  `mes` varchar(100) DEFAULT NULL,
+  `otp` int DEFAULT NULL,
+  PRIMARY KEY (`order_id`,`v_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `payments`
+-- Dumping data for table `order_vender`
 --
 
-LOCK TABLES `payments` WRITE;
-/*!40000 ALTER TABLE `payments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `payments` ENABLE KEYS */;
+LOCK TABLES `order_vender` WRITE;
+/*!40000 ALTER TABLE `order_vender` DISABLE KEYS */;
+INSERT INTO `order_vender` VALUES (2,21,'Completed',NULL,787141),(12,21,'Completed',NULL,642306),(14,21,'Out for Pickup',NULL,189446),(24,21,'Accepted',NULL,NULL),(25,21,'Rejected','Order metrial is not found',NULL),(26,21,'Out for Pickup',NULL,NULL),(29,21,'Accepted',NULL,NULL),(30,21,'Out for Pickup',NULL,NULL),(31,21,'Accepted',NULL,NULL),(36,21,'Accepted',NULL,NULL),(37,22,'Out for Pickup',NULL,NULL),(38,22,'Rejected','Order is not pickup ',NULL),(39,21,'Prepared',NULL,NULL),(40,21,'Rejected','Rejected without accap',NULL),(40,22,'Completed',NULL,185599),(41,21,'Prepared',NULL,NULL),(42,21,'Rejected','rejected duo to unvalbal',NULL),(43,21,'Completed',NULL,848797),(44,21,'Completed',NULL,942270),(45,21,'Completed',NULL,637180),(46,21,'Prepared',NULL,NULL),(48,21,'Completed',NULL,943880),(48,22,'Completed',NULL,970934),(49,21,'Completed',NULL,901169);
+/*!40000 ALTER TABLE `order_vender` ENABLE KEYS */;
 UNLOCK TABLES;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -63,4 +60,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-01-26 10:08:18
+-- Dump completed on 2025-01-26 10:09:08
