@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userId = localStorage.getItem("id");
@@ -21,10 +23,9 @@ const OrderHistory = () => {
         user_id: userId,
       });
 
-      console.log(response.data);
-
       if (response.data.orders) {
-        setOrders(response.data.orders);
+        const sortedOrders = response.data.orders.sort((a, b) => b.id - a.id); // Sort in descending order by ID
+        setOrders(sortedOrders);
       } else {
         setError("No orders found.");
       }
@@ -46,13 +47,18 @@ const OrderHistory = () => {
           <div className="space-y-4">
             {orders.map((order) => {
               const orderDate = new Date(order.created_at);
-              const date = orderDate.toLocaleDateString(); // Extract date
-              const time = orderDate.toLocaleTimeString(); // Extract time
+              const date = orderDate.toLocaleDateString();
+              const time = orderDate.toLocaleTimeString();
 
               return (
                 <div
                   key={order.order_id}
-                  className="flex flex-col sm:flex-row bg-gray-100 p-4 rounded-lg shadow-sm"
+                  className={`flex flex-col sm:flex-row bg-gray-100 p-4 rounded-lg shadow-sm ${order.status === "rejected"
+                      ? "bg-red-100"
+                      : order.status === "delivered"
+                        ? "bg-green-100"
+                        : ""
+                    }`}
                 >
                   <div className="flex-1">
                     {/* Order ID */}
@@ -76,7 +82,7 @@ const OrderHistory = () => {
                     {/* Total Price */}
                     <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
                       <h3 className="font-semibold text-gray-700">Total Price:</h3>
-                      <p className="text-gray-600">Rs{order.total_price}</p>
+                      <p className="text-gray-600">Rs {order.total_price}</p>
                     </div>
 
                     {/* Payment Status */}
@@ -93,8 +99,18 @@ const OrderHistory = () => {
 
                     {/* Delivery Status */}
                     <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Status:</h3>
+                      <h3 className="font-semibold text-gray-700">Delivery Status:</h3>
                       <p className="text-gray-600">{order.status}</p>
+                    </div>
+
+                    {/* Details Button */}
+                    <div className="flex items-center justify-end">
+                      <button
+                        onClick={() => navigate(`/order-dilivery/${order.id}`)}
+                        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600"
+                      >
+                        Details
+                      </button>
                     </div>
                   </div>
                 </div>

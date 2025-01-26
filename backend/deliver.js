@@ -158,7 +158,7 @@ router.get("/pending-orders", async (req, res) => {
       FROM orders o
       JOIN users u ON o.user_id = u.id
       WHERE o.status = 'pending' AND o.delivery_boy_id IS NULL
-      ORDER BY o.id DESC;`    
+      ORDER BY o.id DESC;`   
     );
 
     // Check if no pending orders are found
@@ -248,6 +248,84 @@ router.post("/accept-order", async (req, res) => {
   }
 });
 
+//out for delivery
+// Update order status to 'Out for Delivery'
+//http://localhost:4000/delivery/out-for-delivery
+router.post("/out-for-delivery", async (req, res) => {
+  const { orderId, deliveryBoyId } = req.body; // Order ID and Delivery Boy ID from the request
+
+  try {
+    const [order] = await db.promise().query(
+      `SELECT * FROM orders WHERE id = ? AND delivery_boy_id = ? AND status = 'accepted'`,
+      [orderId, deliveryBoyId]
+    );
+
+    if (order.length === 0) {
+      return res.status(404).json({ message: "Order not found or not accepted by this delivery boy" });
+    }
+
+    await db.promise().query(
+      `UPDATE orders SET status = 'out for delivery' WHERE id = ?`,
+      [orderId]
+    );
+
+    res.status(200).json({ message: "Order is now out for delivery" });
+  } catch (err) {
+    console.error("Error updating order status:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+// GET http://localhost:4000/delivery/search-orders
+// Example: curl -X GET "http://localhost:4000/delivery/search-orders?deliveryBoyId=2&searchQuery=John"
+router.get("/search-orders", async (req, res) => {
+  try {
+    const { deliveryBoyId, searchQuery } = req.query;
+
+    // Validate deliveryBoyId
+    if (!deliveryBoyId) {
+      return res.status(400).json({ error: "Delivery boy ID is required" });
+    }
+
+    // Base query
+    let query = `
+      SELECT 
+        o.id AS order_id,
+        u.id AS customer_id,
+        u.name AS customer_name, 
+        o.created_at AS order_date, 
+        o.total_price AS order_amount,
+        o.delivery_address AS delivery_address, 
+        o.status AS order_status
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+      WHERE o.delivery_boy_id = ?`;
+
+    const queryParams = [deliveryBoyId];
+
+    // Add search condition if searchQuery is provided
+    if (searchQuery) {
+      query += ` AND (u.name LIKE ? OR o.id LIKE ?)`;
+      queryParams.push(`%${searchQuery}%`, `%${searchQuery}%`);
+    }
+
+    query += " ORDER BY o.id DESC;";
+
+    // Execute query
+    const [orders] = await db.promise().query(query, queryParams);
+
+    // Check if no orders are found
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "No orders found matching the search criteria" });
+    }
+
+    // Return the fetched orders
+    res.status(200).json({ orders });
+  } catch (err) {
+    console.error("Error fetching search results:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Generate OTP and save it to the order and return the otp
 //http://localhost:4000/delivery/generate-otp
 //curl -X POST http://localhost:4000/delivery/generate-otp -H "Content-Type: application/json" -d "{\"orderId\":1}"
@@ -281,12 +359,12 @@ router.post("/generate-otp", async (req, res) => {
 
 router.post("/verify-delivery", async (req, res) => {
   const { orderId, deliveryBoyId, otp } = req.body;
-
+  
   try {
     // Fetch order details
     const [order] = await db
       .promise()
-      .query("SELECT * FROM orders WHERE id = ? AND status = 'accepted' AND delivery_boy_id = ?", [
+      .query("SELECT * FROM orders WHERE id = ? AND status = 'out for delivery' AND delivery_boy_id = ?", [
         orderId,
         deliveryBoyId,
       ]);
@@ -330,7 +408,7 @@ router.post("/reject-order", async (req, res) => {
     // Fetch order details
     const [order] = await db
       .promise()
-      .query("SELECT * FROM orders WHERE id = ? AND status = 'accepted' AND delivery_boy_id = ?", [
+      .query("SELECT * FROM orders WHERE id = ? AND status = 'out for delivery' AND delivery_boy_id = ?", [
         orderId,
         deliveryBoyId,
       ]);
@@ -406,7 +484,39 @@ router.post("/reject-order-no-response", async (req, res) => {
     // Check if the order exists and belongs to the delivery boy
     const [order] = await db
       .promise()
-      .query("SELECT * FROM orders WHERE id = ? AND status = 'accepted' AND delivery_boy_id = ?", [
+      .query("SELECT * FROM orders WHERE id = ? AND status = 'out for delivery' AND delivery_boy_id = ?", [
+        orderId,
+        deliveryBoyId,
+      ]);
+
+    if (order.length === 0) {
+      return res.status(400).json({ error: "Invalid order or delivery boy" });
+    }
+
+    // Update the order status to 'rejected'
+    await db
+      .promise()
+      .query("UPDATE orders SET status = 'rejected' WHERE id = ?", [orderId]);
+
+    res.status(200).json({ message: "Order marked as rejected due to no response from the user" });
+  } catch (err) {
+    console.error("Error while rejecting order:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// API: Mark order as rejected due to no response from the user
+//http://localhost:4000/delivery/reject-order-vender
+//curl -X POST http://localhost:4000/delivery/reject-order-vender -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2}"
+
+router.post("/reject-order-vender", async (req, res) => {
+  const { orderId, deliveryBoyId } = req.body;
+
+  try {
+    // Check if the order exists and belongs to the delivery boy
+    const [order] = await db
+      .promise()
+      .query("SELECT * FROM orders WHERE id = ? AND delivery_boy_id = ?", [
         orderId,
         deliveryBoyId,
       ]);
@@ -498,8 +608,7 @@ router.get("/delivery-details", async (req, res) => {
       .query(
         `SELECT COUNT(*) AS pending_order_count
          FROM orders
-         WHERE delivery_boy_id = ? AND status = 'pending'`,
-        [deliveryBoyId]
+         WHERE status = 'pending'`,
       );
 
     // Query to get the count of rejected orders from the orders table
@@ -534,8 +643,9 @@ router.get("/delivery-details", async (req, res) => {
 
 //get order for delivery boy
 //http://localhost:4000/delivery/orders_boy_deliver/48
+// Get order details for delivery boy
 router.get('/orders_boy_deliver/:orderId', (req, res) => {
-  const orderId = req.params.orderId;  // Get the order ID from the URL parameter
+  const orderId = req.params.orderId;
 
   const query = `
     SELECT 
@@ -544,15 +654,23 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
         u.name AS user_name,
         u.email AS user_email,
         u.phone AS user_phone,
-        GROUP_CONCAT(DISTINCT CONCAT(v.id, ':', v.name, '(', IFNULL(ov.status, 'Pending'), ')') SEPARATOR ', ') AS vendors,
-        GROUP_CONCAT(DISTINCT CONCAT(v.name, ' : ', IFNULL(v.address, 'NULL')) SEPARATOR ', ') AS vendor_addresses,
-        GROUP_CONCAT(DISTINCT CONCAT(v.name, ' : ', IFNULL(v.phone, 'NULL')) SEPARATOR ', ') AS vendor_phones,
+        v.id AS vendor_id,
+        v.name AS vendor_name,
+        IFNULL(ov.status, 'Pending') AS vendor_status,
+        IFNULL(v.address, 'NULL') AS vendor_address,
+        IFNULL(v.phone, 'NULL') AS vendor_phone,
+        IFNULL(ov.otp, 'NULL') AS vendor_otp,
         GROUP_CONCAT(DISTINCT CONCAT(oi.item_name, ' x', oi.quantity, ' @', oi.price, ' INR (Vendor: ', v.name, ')') SEPARATOR '; ') AS items,
         o.total_price,
         o.payment_status,
         o.status,
         o.delivery_address,
-        o.created_at
+        o.created_at,
+        o.delivery_otp,
+        d.id AS delivery_boy_id,
+        d.name AS delivery_boy_name,
+        d.email AS delivery_boy_email,
+        d.moble_no AS delivery_boy_phone
     FROM 
         orders o
     INNER JOIN 
@@ -565,15 +683,17 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
         vendors v ON m.vendor_id = v.id
     LEFT JOIN 
         order_vender ov ON o.id = ov.order_id AND v.id = ov.v_id
+    LEFT JOIN 
+        delivery d ON o.delivery_boy_id = d.id  -- Join with the delivery table if delivery_boy is not null
     WHERE 
-        o.id = ?  -- Use the orderId as a parameter to filter the order
+        o.id = ?
     GROUP BY 
-        o.id
+        o.id, v.id
     ORDER BY 
-        o.created_at DESC
+        o.created_at DESC;
   `;
 
-  // Execute the query with the provided orderId
+  // Execute the query
   db.query(query, [orderId], (err, result) => {
     if (err) {
       return res.status(500).json({ error: err.message });
@@ -583,49 +703,57 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    const order = result[0]; // Only one order will be returned due to the WHERE clause
+    const order = result[0]; // This will return the first row of the query result
 
-    const vendors = order.vendors ? order.vendors.split(', ').map(v => {
-      const [vendorId, vendorNameAndStatus] = v.split(':');
-      const vendorName = vendorNameAndStatus.split('(')[0]?.trim() || 'Unknown';
-      const status = vendorNameAndStatus.split('(')[1]?.replace(')', '') || 'Pending';
+    // Collect vendor data and items separately
+    const vendors = result.map((row) => ({
+      vendor_id: row.vendor_id,
+      vendor_name: row.vendor_name,
+      status: row.vendor_status,
+      address: row.vendor_address,
+      phone: row.vendor_phone,
+      otp: row.vendor_otp,
+    }));
 
-      const vendorIndex = order.vendors.split(', ').indexOf(v);
-      const address = (order.vendor_addresses.split(', ')[vendorIndex]?.split(' : ')[1] || 'NULL').trim();
-      const phone = (order.vendor_phones.split(', ')[vendorIndex]?.split(' : ')[1] || 'NULL').trim();
+    // Format items as an array of objects
+    const items = order.items
+      ? order.items.split('; ').map(item => {
+          const [itemName, itemDetails] = item.split(' x');
+          const [quantity, priceAndVendor] = itemDetails
+            ? itemDetails.split(' @')
+            : ['0', '0 INR (Vendor: Unknown)'];
+          const [price, vendor] = priceAndVendor.split(' INR (Vendor: ');
+          return {
+            name: itemName?.trim() || 'Unknown',
+            quantity: parseInt(quantity?.trim()) || 0,
+            price: parseInt(price?.trim()) || 0,
+            vendor: vendor?.replace(')', '')?.trim() || 'Unknown',
+          };
+        })
+      : [];
 
-      return {
-        name: vendorName,
-        status: status,
-        address: address,
-        phone: phone,
-      };
-    }) : [];
-
-    const items = order.items ? order.items.split('; ').map(item => {
-      const [itemName, itemDetails] = item.split(' x');
-      const [quantity, priceAndVendor] = itemDetails ? itemDetails.split(' @') : ['0', '0 INR (Vendor: Unknown)'];
-      const [price, vendor] = priceAndVendor.split(' INR (Vendor: ');
-      return {
-        name: itemName?.trim() || 'Unknown',
-        quantity: parseInt(quantity?.trim()) || 0,
-        price: parseInt(price?.trim()) || 0,
-        vendor: vendor?.replace(')', '')?.trim() || 'Unknown',
-      };
-    }) : [];
-
+    // Prepare final formatted response
     const formattedOrder = {
       order_id: order.order_id,
       user_name: order.user_name,
       user_email: order.user_email,
       user_phone: order.user_phone,
-      vendors: vendors,
+      vendors: vendors, // This will include one row per vendor
       items: items,
       total_price: order.total_price,
-      status: order.payment_status,
+      payment_status: order.payment_status,
       dstatus: order.status,
       delivery_address: order.delivery_address,
       created_at: order.created_at,
+      uotp: order.delivery_otp,
+      delivery_boy: order.delivery_boy_id
+        ? {
+            id: order.delivery_boy_id,
+            name: order.delivery_boy_name,
+            email: order.delivery_boy_email,
+            phone: order.delivery_boy_phone,
+          }
+        : null, // If no delivery boy is assigned
     };
 
     res.json(formattedOrder);

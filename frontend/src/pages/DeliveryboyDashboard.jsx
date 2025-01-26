@@ -19,6 +19,8 @@ const DeliveryboyDashboard = () => {
   const token = localStorage.getItem("token");
   const [userType, setUserType] = useState("");
   const [userData, setUserData] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [openToWork, setOpenToWork] = useState(
     JSON.parse(localStorage.getItem("openToWork")) ?? true
   );
@@ -26,7 +28,7 @@ const DeliveryboyDashboard = () => {
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
   });
-  
+
   useEffect(() => {
     // Function to fetch delivery details
 
@@ -41,7 +43,7 @@ const DeliveryboyDashboard = () => {
       }
     };
     fetchDeliveryDetails();
-  }, [userId,deliveryDetails]);
+  }, [userId, deliveryDetails]);
   useEffect(() => {
     localStorage.setItem("openToWork", JSON.stringify(openToWork));
   }, [openToWork]);
@@ -69,8 +71,24 @@ const DeliveryboyDashboard = () => {
 
     fetchUserProfile();
   }, [token]); // Dependency on token
-  
-  
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/delivery/search-orders?deliveryBoyId=${userId}&searchQuery=${searchQuery}`
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setFilteredOrders(data.orders); // Updated here
+        setSearchTerm("0");
+      } else {
+        setFilteredOrders([]); // Updated here
+        setSearchTerm("1");
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
   const toggleOpenToWork = async (isOpen, token) => {
     try {
       const response = await axios.post(
@@ -104,7 +122,7 @@ const DeliveryboyDashboard = () => {
     const date = new Date(dateString);
     return `${date.toLocaleDateString("en-IN", options)} ${date.toLocaleTimeString("en-IN")}`;
   };
-  
+
   useEffect(() => {
     const fetchPendingOrders = async () => {
       try {
@@ -121,10 +139,10 @@ const DeliveryboyDashboard = () => {
 
     fetchPendingOrders();
   }, [orders]);
-  
+
   useEffect(() => {
     const fetchDeliverOrders = async () => {
-      if(!userId){
+      if (!userId) {
         return;
       }
       try {
@@ -140,10 +158,10 @@ const DeliveryboyDashboard = () => {
         setLoading(false);
       }
     };
-  
+
     fetchDeliverOrders();
-  }, [userId,allorders]);
-  
+  }, [userId, allorders]);
+
 
   if (loading) {
     return <div className="text-center p-4">Loading...</div>;
@@ -152,6 +170,71 @@ const DeliveryboyDashboard = () => {
   if (error) {
     return <div className="text-center p-4 text-red-500">{error}</div>;
   }
+  // Filter orders based on their status
+  const acceptedOrders = allorders.filter((order) => order.order_status === "accepted");
+  const outForDeliveryOrders = allorders.filter((order) => order.order_status === "out for delivery");
+  const deliveredOrders = allorders.filter((order) => order.order_status === "delivered");
+  const rejectedOrders = allorders.filter((order) => order.order_status === "rejected");
+
+  const renderOrderTable = (orders, status) => (
+    <div>
+      <h2 className="text-2xl font-bold mb-4 mt-4">{status} Orders</h2>
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <table className="min-w-full table-auto">
+          <thead className="bg-purple-600 text-white">
+            <tr>
+              {[
+                "Order ID",
+                "Customer ID",
+                "Customer Name",
+                "Order Date",
+                "Amount",
+                "Delivery Address",
+                "Status",
+                "Actions",
+              ].map((head) => (
+                <th key={head} className="py-3 px-4 text-left">
+                  {head}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {orders.length > 0 ? (
+              orders.map((order) => (
+                <tr
+                  key={order.order_id}
+                  className="hover:bg-gray-50 border-b transition-all duration-300"
+                >
+                  <td className="py-3 px-4">{order.order_id}</td>
+                  <td className="py-3 px-4">{order.customer_id}</td>
+                  <td className="py-3 px-4">{order.customer_name}</td>
+                  <td className="py-3 px-4">{formatDateTime(order.order_date)}</td>
+                  <td className="py-3 px-4">₹{order.order_amount}</td>
+                  <td className="py-3 px-4">{order.delivery_address}</td>
+                  <td className="py-3 px-4">{order.order_status}</td>
+                  <td className="py-3 px-4">
+                    <button
+                      className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
+                      onClick={() => navigate(`/order-dilivery/${order.order_id}`)}
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="text-center py-3 px-4">
+                  No orders in this status.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -212,107 +295,147 @@ const DeliveryboyDashboard = () => {
           <input
             type="text"
             placeholder="Search by Order ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border rounded"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded-lg p-2 w-full max-w-sm"
           />
+          <button
+            onClick={handleSearch}
+            className="ml-4 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700"
+          >
+            Search
+          </button>
+
         </div>
+        {filteredOrders.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Search Results</h2>
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead className="bg-purple-600 text-white">
+                  <tr>
+                    {[
+                      "Order ID",
+                      "Customer ID",
+                      "Customer Name",
+                      "Order Date",
+                      "Amount",
+                      "Delivery Address",
+                      "Status",
+                      "Actions",
+                    ].map((head) => (
+                      <th key={head} className="py-3 px-4 text-left">
+                        {head}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order.order_id}
+                      className="hover:bg-gray-50 border-b transition-all duration-300"
+                    >
+                      <td className="py-3 px-4">{order.order_id}</td>
+                      <td className="py-3 px-4">{order.customer_id}</td>
+                      <td className="py-3 px-4">{order.customer_name}</td>
+                      <td className="py-3 px-4">
+                        {new Date(order.order_date).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4">₹{order.order_amount}</td>
+                      <td className="py-3 px-4">{order.delivery_address}</td>
+                      <td className="py-3 px-4">{order.order_status}</td>
+                      <td className="py-3 px-4">
+                        <button
+                          className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
+                          onClick={() => navigate(`/order-dilivery/${order.order_id}`)}
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        {searchTerm=="1" && (<div className="text-center text-gray-600 mt-8">
+          <h2 className="text-xl font-semibold mb-2">No Results Found</h2>
+          <p>We couldn't find any orders matching your search criteria.</p>
+        </div>)}
 
         {/* Orders Table */}
+
         <div>
-          <h2 className="text-2xl font-bold mb-4">New Order</h2>
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead className="bg-purple-600 text-white">
-                <tr>
-                  {[
-                    "Order ID",
-                    "Customer ID",
-                    "Customer Name",
-                    "Order Date",
-                    "Amount",
-                    "Delivery Address",
-                    "Status",
-                    "Actions",
-                  ].map((head) => (
-                    <th key={head} className="py-3 px-4 text-left">
-                      {head}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr
-                    key={order.order_id}
-                    className="hover:bg-gray-50 border-b transition-all duration-300"
-                  >
-                    <td className="py-3 px-4">{order.order_id}</td>
-                    <td className="py-3 px-4">{order.customer_id}</td>
-                    <td className="py-3 px-4">{order.customer_name}</td>
-                    <td className="py-3 px-4">{formatDateTime(order.order_date)}</td>
-                    <td className="py-3 px-4">₹{order.order_amount}</td>
-                    <td className="py-3 px-4">{order.delivery_address}</td>
-                    <td className="py-3 px-4">{order.order_status}</td>
-                    <td className="py-3 px-4">
-                      <button
-                        className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
-                        onClick={() => navigate(`/order-dilivery/${order.order_id}`)}
+          {openToWork ? (
+            <>
+              <h2 className="text-2xl font-bold mb-4">New Order</h2>
+              <div className="bg-white rounded-lg shadow overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead className="bg-purple-600 text-white">
+                    <tr>
+                      {[
+                        "Order ID",
+                        "Customer ID",
+                        "Customer Name",
+                        "Order Date",
+                        "Amount",
+                        "Delivery Address",
+                        "Status",
+                        "Actions",
+                      ].map((head) => (
+                        <th key={head} className="py-3 px-4 text-left">
+                          {head}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order) => (
+                      <tr
+                        key={order.order_id}
+                        className="hover:bg-gray-50 border-b transition-all duration-300"
                       >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <h2 className="text-2xl font-bold mb-4 mt-4">Order</h2>
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead className="bg-purple-600 text-white">
-                <tr>
-                  {[
-                    "Order ID",
-                    "Customer ID",
-                    "Customer Name",
-                    "Order Date",
-                    "Amount",
-                    "Delivery Address",
-                    "Status",
-                    "Actions",
-                  ].map((head) => (
-                    <th key={head} className="py-3 px-4 text-left">
-                      {head}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {allorders.map((allorder) => (
-                  <tr
-                    key={allorder.order_id}
-                    className="hover:bg-gray-50 border-b transition-all duration-300"
-                  >
-                    <td className="py-3 px-4">{allorder.order_id}</td>
-                    <td className="py-3 px-4">{allorder.customer_id}</td>
-                    <td className="py-3 px-4">{allorder.customer_name}</td>
-                    <td className="py-3 px-4">{formatDateTime(allorder.order_date)}</td>
-                    <td className="py-3 px-4">₹{allorder.order_amount}</td>
-                    <td className="py-3 px-4">{allorder.delivery_address}</td>
-                    <td className="py-3 px-4">{allorder.order_status}</td>
-                    <td className="py-3 px-4">
-                      <button
-                        className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
-                        onClick={() => navigate(`/order-dilivery/${allorder.order_id}`)}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <td className="py-3 px-4">{order.order_id}</td>
+                        <td className="py-3 px-4">{order.customer_id}</td>
+                        <td className="py-3 px-4">{order.customer_name}</td>
+                        <td className="py-3 px-4">{formatDateTime(order.order_date)}</td>
+                        <td className="py-3 px-4">₹{order.order_amount}</td>
+                        <td className="py-3 px-4">{order.delivery_address}</td>
+                        <td className="py-3 px-4">{order.order_status}</td>
+                        <td className="py-3 px-4">
+                          <button
+                            className="mr-3 text-green-600 text-xl hover:scale-110 transition-all"
+                            onClick={() => navigate(`/order-dilivery/${order.order_id}`)}
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div className="text-center text-gray-600 mt-8">
+              <h2 className="text-xl font-semibold mb-2">You are not available for new orders</h2>
+              <p>To start accepting new orders, please toggle "Open to Work".</p>
+            </div>
+          )}
+
+          <div>
+            {loading ? (
+              <p>Loading orders...</p>
+            ) : (
+              <>
+                {renderOrderTable(acceptedOrders, "Accepted")}
+                {renderOrderTable(outForDeliveryOrders, "Out for Delivery")}
+                {renderOrderTable(deliveredOrders, "Delivered")}
+                {renderOrderTable(rejectedOrders, "Rejected")}
+              </>
+            )}
           </div>
         </div>
       </div>

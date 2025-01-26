@@ -36,8 +36,9 @@ const Footer = () => {
           </div>
         </div>
         <div className="text-center text-gray-500 text-sm mt-6">
-          © 2023 CampusEats. All rights reserved.
+          © 2025 CampusEats. All rights reserved.
         </div>
+        {/* 26/01/2025 */}
       </footer>
     </div>
   );
