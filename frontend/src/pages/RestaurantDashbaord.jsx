@@ -351,13 +351,13 @@ const RestaurantDashboard = () => {
     });
   }, [orders]);
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col lg:flex-row">
       {/* Sidebar */}
-      <aside className="w-1/5 bg-gray-50 text-black flex flex-col">
+      <aside className="w-full lg:w-1/5 bg-gray-50 text-black flex flex-col">
         <div className="p-4 border-b border-gray-700">
           <h1 className="text-2xl font-bold">Name: {profileData.name || 'N/A'}</h1>
           <p className="text-sm text-gray-400">Address: {profileData.address || 'N/A'}</p>
-          <p className="text-sm text-gray-400">Moblie No: {profileData.phone || 'N/A'}</p>
+          <p className="text-sm text-gray-400">Mobile No: {profileData.phone || 'N/A'}</p>
           <p className="text-sm text-gray-400">Restaurant Id: {profileData.id || 'N/A'}</p>
         </div>
         <nav className="flex-grow p-4 space-y-4 border-b border-gray-700">
@@ -377,7 +377,7 @@ const RestaurantDashboard = () => {
                 <span className="text-gray-400">{orderDetails.totalPendingOrders || 'N/A'}</span>
               </li>
               <li className="flex items-center justify-between text-sm">
-                <span>Accpted Orders :</span>
+                <span>Accepted Orders :</span>
                 <span className="text-gray-400">{orderDetails.totalAcceptedOrders || 'N/A'}</span>
               </li>
               <li className="flex items-center justify-between text-sm">
@@ -385,7 +385,7 @@ const RestaurantDashboard = () => {
                 <span className="text-gray-400">{orderDetails.totalPrepared || 'N/A'}</span>
               </li>
               <li className="flex items-center justify-between text-sm">
-                <span>OutforPickup Orders :</span>
+                <span>Out for Pickup Orders :</span>
                 <span className="text-gray-400">{orderDetails.totalOutforPickupOrders || 'N/A'}</span>
               </li>
               <li className="flex items-center justify-between text-sm">
@@ -400,8 +400,8 @@ const RestaurantDashboard = () => {
       {/* Main Content */}
       <main className="flex-grow">
         {/* Header */}
-        <header className="flex items-center justify-between bg-white shadow p-4">
-          <div className="flex items-center space-x-4">
+        <header className="flex flex-col lg:flex-row items-center justify-between bg-white shadow p-4">
+          <div className="flex items-center space-x-4 mb-4 lg:mb-0">
             <div className="text-gray-600" onClick={handleSearch}>
               <FaSearch />
             </div>
@@ -410,12 +410,14 @@ const RestaurantDashboard = () => {
               placeholder="Enter order ID to search"
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 w-80"
+              className="border border-gray-300 rounded-lg px-4 py-2 w-full lg:w-80"
             />
           </div>
+
           {/* Error message */}
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <div className="flex items-center space-x-4">
+          {error && <p className="text-red-500 text-sm mt-2 lg:mt-0">{error}</p>}
+
+          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
             <button
               className="bg-purple-500 text-white px-4 py-2 rounded-lg transition-transform transform hover:scale-105"
               onClick={() => setModalOpen(true)}
@@ -429,8 +431,7 @@ const RestaurantDashboard = () => {
               Complete Order
             </button>
             <button
-              className={`text-white px-4 py-2 rounded-lg ${isOnline ? "bg-green-500" : "bg-red-500"
-                }`}
+              className={`text-white px-4 py-2 rounded-lg ${isOnline ? "bg-green-500" : "bg-red-500"}`}
               onClick={toggleOnlineStatus}
             >
               {isOnline ? "Online" : "Offline"}
@@ -695,51 +696,53 @@ const RestaurantDashboard = () => {
           {result && result.length > 0 && (
             <div>
               <h3 className="text-xl font-semibold mb-4">Search Results</h3>
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.map((order, index) => (
-                    <tr
-                      key={`${order.order_item_id}-${index}`}
-                      className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors"
-                    >
-                      <td className="p-4">
-                        <img
-                          src={order.image_url} // Assuming `image_url` is available
-                          alt={order.menu_name}
-                          className="w-16 h-16 object-cover rounded-md"
-                        />
-                      </td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone || 'N/A'}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {result.map((order, index) => (
+                      <tr
+                        key={`${order.order_item_id}-${index}`}
+                        className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors"
+                      >
+                        <td className="p-4">
+                          <img
+                            src={order.image_url} // Assuming `image_url` is available
+                            alt={order.menu_name}
+                            className="w-16 h-16 object-cover rounded-md"
+                          />
+                        </td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone || 'N/A'}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -751,42 +754,44 @@ const RestaurantDashboard = () => {
             {orders.filter(order => !order.vender_status).length === 0 ? (
               <p className="text-gray-500">No orders in this status</p>
             ) : (
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.filter(order => !order.vender_status).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                    <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                      <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {orders.filter(order => !order.vender_status).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
@@ -796,42 +801,44 @@ const RestaurantDashboard = () => {
             {orders.filter(order => order.vender_status === 'Accepted').length === 0 ? (
               <p className="text-gray-500">No orders in this status</p>
             ) : (
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.filter(order => order.vender_status === 'Accepted').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                    <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                      <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {orders.filter(order => order.vender_status === 'Accepted').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
@@ -841,42 +848,44 @@ const RestaurantDashboard = () => {
             {orders.filter(order => order.vender_status === 'Prepared').length === 0 ? (
               <p className="text-gray-500">No orders in this status</p>
             ) : (
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.filter(order => order.vender_status === 'Prepared').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                    <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                      <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {orders.filter(order => order.vender_status === 'Prepared').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
@@ -886,132 +895,141 @@ const RestaurantDashboard = () => {
             {orders.filter(order => order.vender_status === 'Out for Pickup').length === 0 ? (
               <p className="text-gray-500">No orders in this status</p>
             ) : (
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.filter(order => order.vender_status === 'Out for Pickup').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                    <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                      <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {orders.filter(order => order.vender_status === 'Out for Pickup').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-          {/* Camplted */}
+
+          {/* Completed Orders */}
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-gray-700">Completed Orders</h2>
             {orders.filter(order => order.vender_status === 'Completed').length === 0 ? (
               <p className="text-gray-500">No orders in this status</p>
             ) : (
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.filter(order => order.vender_status === 'Completed').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                    <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                      <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {orders.filter(order => order.vender_status === 'Completed').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
+
           {/* Rejected Orders */}
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-gray-700">Rejected Orders</h2>
             {orders.filter(order => order.vender_status === 'Rejected').length === 0 ? (
               <p className="text-gray-500">No orders in this status</p>
             ) : (
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 text-sm">
-                    <th className="p-4 text-left">Image</th>
-                    <th className="p-4 text-left">Order Item ID</th>
-                    <th className="p-4 text-left">User ID</th>
-                    <th className="p-4 text-left">User Name</th>
-                    <th className="p-4 text-left">Phone</th>
-                    <th className="p-4 text-left">Menu Name</th>
-                    <th className="p-4 text-left">Quantity</th>
-                    <th className="p-4 text-left">Total Price</th>
-                    <th className="p-4 text-left">Delivery Address</th>
-                    <th className="p-4 text-left">Payment Status</th>
-                    <th className="p-4 text-left">Order Date</th>
-                    <th className="p-4 text-left">Vendor Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.filter(order => order.vender_status === 'Rejected').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                    <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b bg-red-100">
-                      <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                      <td className="p-4">{order.order_item_id}</td>
-                      <td className="p-4">{order.user_id}</td>
-                      <td className="p-4">{order.user_name}</td>
-                      <td className="p-4">{order.user_phone}</td>
-                      <td className="p-4">{order.menu_name}</td>
-                      <td className="p-4">{order.quantity}</td>
-                      <td className="p-4">{order.total_price} Rs</td>
-                      <td className="p-4">{order.delivery_address}</td>
-                      <td className="p-4">{order.payment_status}</td>
-                      <td className="p-4">{formatDateTime(order.order_date)}</td>
-                      <td className="p-4">{order.vender_status || 'Pending'}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Image</th>
+                      <th className="p-4 text-left">Order Item ID</th>
+                      <th className="p-4 text-left">User ID</th>
+                      <th className="p-4 text-left">User Name</th>
+                      <th className="p-4 text-left">Phone</th>
+                      <th className="p-4 text-left">Menu Name</th>
+                      <th className="p-4 text-left">Quantity</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Order Date</th>
+                      <th className="p-4 text-left">Vendor Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {orders.filter(order => order.vender_status === 'Rejected').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b bg-red-100">
+                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                        <td className="p-4">{order.order_item_id}</td>
+                        <td className="p-4">{order.user_id}</td>
+                        <td className="p-4">{order.user_name}</td>
+                        <td className="p-4">{order.user_phone}</td>
+                        <td className="p-4">{order.menu_name}</td>
+                        <td className="p-4">{order.quantity}</td>
+                        <td className="p-4">{order.total_price} Rs</td>
+                        <td className="p-4">{order.delivery_address}</td>
+                        <td className="p-4">{order.payment_status}</td>
+                        <td className="p-4">{formatDateTime(order.order_date)}</td>
+                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
+
         </section>
         {/* Menu Section */}
 
