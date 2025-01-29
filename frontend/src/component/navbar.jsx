@@ -197,7 +197,7 @@ const Navbar = () => {
                 Track Order
               </Link>
             )}
-            {userType === "delivery_boy" && (
+            {userType == "delivery_boy" && (
               <Link
                 to={`/custmer/${userId}`}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
@@ -262,7 +262,7 @@ const Navbar = () => {
                     Track Order
                   </Link>
                 )}
-                {userType === "delivery_boy" && (
+                {userType == "delivery_boy" && (
                   <Link
                     to={`/custmer/${userId}`}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
