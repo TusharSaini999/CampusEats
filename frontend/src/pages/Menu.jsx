@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
-  const [userType, setUserType] = useState("");
-  const [cart, setCart] = useState([]);
+  const [setUserType] = useState("");
+  const [setCart] = useState([]);
   const [userId, setUserId] = useState("");
   
   const Modal = ({ message, onClose }) => {
@@ -50,7 +50,7 @@ const Menu = () => {
     const intervalId = setInterval(fetchMenuItems, 1000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [setUserType]);
 
   const handleAddToCart = async (menu_id) => {
     const order_id = Date.now(); // Generate a unique order ID

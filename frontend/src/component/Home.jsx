@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import myImage from '../assets/hero.jpg';
 
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); 
-  const navigate = useNavigate();
   
   useEffect(() => {
     const authToken = localStorage.getItem("token");
     if (authToken) {
       setIsLoggedIn(true);
     }
-  }, []);
+  }, [isLoggedIn]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    navigate("/"); 
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-500 to-purple-700">
