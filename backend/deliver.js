@@ -202,12 +202,6 @@ router.get("/all-orders", async (req, res) => {
       ORDER BY o.id DESC;`,
       [deliveryBoyId]
     );
-
-    // Check if no orders are found
-    if (orders.length === 0) {
-      return res.status(404).json({ message: "No orders found for this delivery boy" });
-    }
-
     // Return the fetched orders
     res.status(200).json({ orders });
   } catch (err) {

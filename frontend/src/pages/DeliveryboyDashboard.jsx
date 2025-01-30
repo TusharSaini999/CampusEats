@@ -34,15 +34,15 @@ const DeliveryboyDashboard = () => {
 
     const fetchDeliveryDetails = async () => {
       try {
-        const user_id = userId;
-
-        const response = await axios.get(`http://localhost:4000/delivery/delivery-details?deliveryBoyId=${user_id}`);
+        const response = await axios.get(`http://localhost:4000/delivery/delivery-details?deliveryBoyId=${userId}`);
         setDeliveryDetails(response.data.data);
       } catch (error) {
         console.error("Error fetching delivery details:", error);
       }
     };
-    fetchDeliveryDetails();
+    if (userId) {
+      fetchDeliveryDetails();
+    }
   }, [userId, deliveryDetails]);
   useEffect(() => {
     localStorage.setItem("openToWork", JSON.stringify(openToWork));
