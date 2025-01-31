@@ -5,9 +5,8 @@ const db = require("./db");
 const app = express();
 require('dotenv').config();
 
-app.use(cors({
-  origin: 'https://campuseats.netlify.app/'
-}));
+// Middleware
+app.use(cors());
 app.use(bodyParser.json());
 
 // Import route files
