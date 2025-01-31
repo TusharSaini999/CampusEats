@@ -43,7 +43,7 @@ const SearchResults = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `http://localhost:4000/menu/search-menu/${searchQuery}`
+          `https://campuseats-ki1c.onrender.com/menu/search-menu/${searchQuery}`
         );
         setResults(response.data);
       } catch (err) {
@@ -78,7 +78,7 @@ const SearchResults = () => {
   
     try {
       const response = await fetch(
-        "http://localhost:4000/order_items/add-to-cart",
+        "https://campuseats-ki1c.onrender.com/order_items/add-to-cart",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

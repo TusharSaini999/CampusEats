@@ -26,7 +26,7 @@ const Cart = () => {
         const user_id = userId;
 
         const response = await fetch(
-          `http://localhost:4000/order_items?user_id=${user_id}`
+          `https://campuseats-ki1c.onrender.com/order_items?user_id=${user_id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch cart items");
@@ -51,7 +51,7 @@ const Cart = () => {
   const handleQuantityChange = async (id, newQuantity) => {
     try {
       const response = await fetch(
-        `http://localhost:4000/order_items/update-quantity/${id}`,
+        `https://campuseats-ki1c.onrender.com/order_items/update-quantity/${id}`,
         {
           method: "PUT",
           headers: {
@@ -94,7 +94,7 @@ const Cart = () => {
 
   const handleRemoveItem = async (id) => {
     try {
-      await fetch(`http://localhost:4000/order_items/remove-item/${id}`, {
+      await fetch(`https://campuseats-ki1c.onrender.com/order_items/remove-item/${id}`, {
         method: "DELETE",
       });
 

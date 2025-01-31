@@ -24,7 +24,7 @@ const Menu = () => {
   // Function to fetch menu items
   const fetchMenuItems = async () => {
     try {
-      const response = await fetch("http://localhost:4000/menu/");
+      const response = await fetch("https://campuseats-ki1c.onrender.com/menu/");
       const data = await response.json();
 
       // Assign default image to items with empty image URLs
@@ -73,7 +73,7 @@ const Menu = () => {
     const cartItem = { order_id, menu_id, quantity, price, user_id };
 
     try {
-      const response = await fetch("http://localhost:4000/order_items/add-to-cart", {
+      const response = await fetch("https://campuseats-ki1c.onrender.com/order_items/add-to-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cartItem),

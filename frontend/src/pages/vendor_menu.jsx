@@ -27,7 +27,7 @@ const Overmenu = () => {
     if (!userId) return;
     try {
       const response = await axios.get(
-        `http://localhost:4000/menu/vend`,
+        `https://campuseats-ki1c.onrender.com/menu/vend`,
         {
           params: { vendor_id: userId }
         }
@@ -62,7 +62,7 @@ const Overmenu = () => {
     formData.append('availability', availability);
     formData.append('image_url', image_url);
     try {
-      const response = await fetch("http://localhost:4000/menu/post-menu", {
+      const response = await fetch("https://campuseats-ki1c.onrender.com/menu/post-menu", {
         method: "POST",
         body: formData,
       });
@@ -96,7 +96,7 @@ const Overmenu = () => {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:4000/menu/update-menu/${editItem.id}`, {
+      await axios.put(`https://campuseats-ki1c.onrender.com/menu/update-menu/${editItem.id}`, {
         name: editItem.name,
         description: editItem.description,
         price: editItem.price,
@@ -122,7 +122,7 @@ const Overmenu = () => {
 
   const handleDelete = async (itemId) => {
     try {
-      await axios.delete(`http://localhost:4000/menu/delete-menu/${itemId}`);
+      await axios.delete(`https://campuseats-ki1c.onrender.com/menu/delete-menu/${itemId}`);
       fetchOurMenu();
     } catch (error) {
       console.error("Error deleting item:", error);

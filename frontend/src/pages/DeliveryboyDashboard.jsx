@@ -34,7 +34,7 @@ const DeliveryboyDashboard = () => {
 
     const fetchDeliveryDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/delivery/delivery-details?deliveryBoyId=${userId}`);
+        const response = await axios.get(`https://campuseats-ki1c.onrender.com/delivery/delivery-details?deliveryBoyId=${userId}`);
         setDeliveryDetails(response.data.data);
       } catch (error) {
         console.error("Error fetching delivery details:", error);
@@ -56,7 +56,7 @@ const DeliveryboyDashboard = () => {
       }
 
       try {
-        const response = await axios.get("http://localhost:4000/users/profile", {
+        const response = await axios.get("https://campuseats-ki1c.onrender.com/users/profile", {
           headers: {
             Authorization: token, // Pass token in headers
           },
@@ -74,7 +74,7 @@ const DeliveryboyDashboard = () => {
   const handleSearch = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/delivery/search-orders?deliveryBoyId=${userId}&searchQuery=${searchQuery}`
+        `https://campuseats-ki1c.onrender.com/delivery/search-orders?deliveryBoyId=${userId}&searchQuery=${searchQuery}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -92,7 +92,7 @@ const DeliveryboyDashboard = () => {
   const toggleOpenToWork = async (isOpen, token) => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/delivery/open-to-work",
+        "https://campuseats-ki1c.onrender.com/delivery/open-to-work",
         { isOpen },
         {
           headers: {
@@ -127,7 +127,7 @@ const DeliveryboyDashboard = () => {
     const fetchPendingOrders = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/delivery/pending-orders`
+          `https://campuseats-ki1c.onrender.com/delivery/pending-orders`
         );
         setOrders(response.data.pendingOrders);
         setLoading(false);
@@ -148,7 +148,7 @@ const DeliveryboyDashboard = () => {
       try {
         console.log("Fetching orders for deliveryBoyId:", userId); // Debugging log
         const response = await axios.get(
-          `http://localhost:4000/delivery/all-orders?deliveryBoyId=${userId}`
+          `https://campuseats-ki1c.onrender.com/delivery/all-orders?deliveryBoyId=${userId}`
         );
         setAllOrders(response.data.orders);
         setLoading(false);

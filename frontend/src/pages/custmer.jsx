@@ -30,7 +30,7 @@ const DeliveryTrackingPage = () => {
   const fetchLocations = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/map/locations?ord_id=${orderId}&deli_boy=${deliveryid}`
+        `https://campuseats-ki1c.onrender.com/map/locations?ord_id=${orderId}&deli_boy=${deliveryid}`
        );
       if (response.data.status === "success") {
         setCustomerLocation(response.data.customer_location);
@@ -48,7 +48,7 @@ const DeliveryTrackingPage = () => {
   // Function to update delivery boy's location in the backend
   const updateDeliveryBoyLocation = async (latitude, longitude) => {
     try {
-      await axios.post("http://localhost:4000/map/update-location", {
+      await axios.post("https://campuseats-ki1c.onrender.com/map/update-location", {
         delivery_boy_id: deliveryid,
         latitude,
         longitude,

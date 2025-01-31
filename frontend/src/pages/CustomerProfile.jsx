@@ -22,7 +22,7 @@ function ProfilePage() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:4000/users/profile",
+          "https://campuseats-ki1c.onrender.com/users/profile",
           {
             headers: { Authorization: token },
           }
@@ -69,7 +69,7 @@ function ProfilePage() {
         formDataObj.append("image", selectedImage);
       }
 
-      await axios.put("http://localhost:4000/users/profile-update", formDataObj, {
+      await axios.put("https://campuseats-ki1c.onrender.com/users/profile-update", formDataObj, {
         headers: { Authorization: token, "Content-Type": "multipart/form-data" },
       });
 

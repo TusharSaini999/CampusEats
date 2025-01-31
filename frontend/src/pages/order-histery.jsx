@@ -19,7 +19,7 @@ const OrderHistory = () => {
 
   const fetchOrderHistory = async (userId) => {
     try {
-      const response = await axios.post("http://localhost:4000/orders/history", {
+      const response = await axios.post("https://campuseats-ki1c.onrender.com/orders/history", {
         user_id: userId,
       });
 

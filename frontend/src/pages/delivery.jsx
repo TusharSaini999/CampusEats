@@ -31,7 +31,7 @@ const DeliveryTrackingPage = () => {
       console.log("Fetching locations with Order ID:", orderId, "Customer ID:", customerId);
 
       const response = await axios.get(
-        `http://localhost:4000/map/locationsByCustomer?ord_id=${orderId}&customer_id=${customerId}`
+        `https://campuseats-ki1c.onrender.com/map/locationsByCustomer?ord_id=${orderId}&customer_id=${customerId}`
       );
 
       if (response.data.status === "success") {

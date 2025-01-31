@@ -52,7 +52,7 @@ const RestaurantDashboard = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/vendors/search-orders/${userId}?orderId=${orderId}`);
+      const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/search-orders/${userId}?orderId=${orderId}`);
       const data = await response.json();
 
       console.log('Response Data:', data); // Log the entire response from the server
@@ -79,7 +79,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     if (selectedOrder) {
       axios
-        .get(`http://localhost:4000/vendors/order-status?order_id=${selectedOrder}&vendor_id=${userId}`)
+        .get(`https://campuseats-ki1c.onrender.com/vendors/order-status?order_id=${selectedOrder}&vendor_id=${userId}`)
         .then((response) => {
           setOrderStatus(response.data.status);
           setErrorMessage(""); // Clear error messages
@@ -93,7 +93,7 @@ const RestaurantDashboard = () => {
   const handleGenerateOtp = () => {
     console.log(selectedOrder);
     axios
-      .post("http://localhost:4000/vendors/generate-otp", {
+      .post("https://campuseats-ki1c.onrender.com/vendors/generate-otp", {
         order_id: selectedOrder,
         v_id: userId,
       })
@@ -112,7 +112,7 @@ const RestaurantDashboard = () => {
     console.log('OTP:', orderOtp);
 
     axios
-      .post("http://localhost:4000/vendors/verify-otp", {
+      .post("https://campuseats-ki1c.onrender.com/vendors/verify-otp", {
         order_id: selectedOrder,
         v_id: userId,
         otp: orderOtp,
@@ -177,7 +177,7 @@ const RestaurantDashboard = () => {
   };
   const updateOrderStatus = (newStatus) => {
     axios
-      .post("http://localhost:4000/vendors/assign-order", {
+      .post("https://campuseats-ki1c.onrender.com/vendors/assign-order", {
         vendor_id: userId,
         order_id: selectedOrderId,
         status: newStatus,
@@ -195,7 +195,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     if (modalOpen && selectedOrderId) {
       axios
-        .get(`http://localhost:4000/vendors/order-status?order_id=${selectedOrderId}&vendor_id=${userId}`)
+        .get(`https://campuseats-ki1c.onrender.com/vendors/order-status?order_id=${selectedOrderId}&vendor_id=${userId}`)
         .then((response) => {
           setStatus(response.data.status);
         })
@@ -223,7 +223,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     const fetchVendorStatus = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/vendors/vendor-status/${vendor_id}`);
+        const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/vendor-status/${vendor_id}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -247,7 +247,7 @@ const RestaurantDashboard = () => {
   const toggleOnlineStatus = async () => {
     const newStatus = isOnline ? 0 : 1;
     try {
-      const response = await fetch("http://localhost:4000/vendors/update-vendor-status", {
+      const response = await fetch("https://campuseats-ki1c.onrender.com/vendors/update-vendor-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -283,7 +283,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/vendors/orders/${userId}`);
+        const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/orders/${userId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch orders");
         }
@@ -316,7 +316,7 @@ const RestaurantDashboard = () => {
 
       try {
         const response = await axios.get(
-          "http://localhost:4000/users/profile",
+          "https://campuseats-ki1c.onrender.com/users/profile",
           {
             headers: {
               Authorization: token,
