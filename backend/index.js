@@ -5,7 +5,7 @@ const db = require("./db");
 const app = express();
 require('dotenv').config();
 
-const allowedOrigins = ['http://localhost:3000', 'https://campuseats.netlify.app/menuvendoer'];
+const allowedOrigins = ['http://localhost:3000', 'https://campuseats.netlify.app'];
 
 app.use(cors({
   origin: (origin, callback) => {
