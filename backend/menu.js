@@ -92,7 +92,7 @@ ON
 ////http://localhost:4000/menu/update-menu/:id=1
 router.put("/update-menu/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, category, image_url, availability } =
+  const { name, description, price, category, availability } =
     req.body;
 
   try {
@@ -103,7 +103,6 @@ router.put("/update-menu/:id", async (req, res) => {
         description = ?, 
         price = ?, 
         category = ?, 
-        image_url = ?, 
         availability = ?
       WHERE id = ?`;
 
@@ -114,7 +113,6 @@ router.put("/update-menu/:id", async (req, res) => {
         description,
         price,
         category,
-        image_url,
         availability,
         id,
       ]);

@@ -36,7 +36,7 @@ const Overmenu = () => {
         ...item,
         image_url: item.image_url 
           ? `${process.env.REACT_APP_BACKEND_URL}${item.image_url}`
-          : `${process.env.REACT_APP_BACKEND_URL}images/coffee.png`,
+          : `https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg`,
       }));
       setMenu(menuWithImages);
     } catch (error) {
@@ -107,7 +107,6 @@ const Overmenu = () => {
         description: editItem.description,
         price: editItem.price,
         category: editItem.category,
-        image_url: editItem.image_url,
         availability: editItem.availability,
       });
       alert("Menu item updated successfully!");
@@ -117,7 +116,6 @@ const Overmenu = () => {
       setPrice("");
       setCategory("");
       setAvailability("");
-      setImageUrl("");
       await fetchOurMenu();
     } catch (error) {
       console.log(editItem);
@@ -335,20 +333,6 @@ const Overmenu = () => {
                   value={editItem.category}
                   onChange={(e) =>
                     setEditItem({ ...editItem, category: e.target.value })
-                  }
-                  className="border border-gray-300 rounded-lg px-4 py-2 w-full"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Image URL</label>
-                <input
-                  type="text"
-                  value={editItem.image_url}
-                  onChange={(e) =>
-                    setEditItem({
-                      ...editItem,
-                      image_url: e.target.value,
-                    })
                   }
                   className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 />
