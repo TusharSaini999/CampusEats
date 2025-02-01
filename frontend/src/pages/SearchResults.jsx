@@ -27,7 +27,7 @@ const SearchResults = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const searchQuery = queryParams.get("query");
- useEffect(() => {
+  useEffect(() => {
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
   });
@@ -58,24 +58,24 @@ const SearchResults = () => {
   }, [searchQuery]);
 
   const handleAddToCart = async (menu_id) => {
-    
+
     const user_id = userId;
-  
+
     if (!user_id) {
       alert("Please log in to add items to the cart.");
       return;
     }
-  
+
     const order_id = Date.now();
     const quantity = 1;
-  
+
     const selectedItem = results.find((item) => item.id === menu_id);
     if (!selectedItem) return;
-  
+
     const price = selectedItem.price;
-  
+
     const cartItem = { order_id, menu_id, quantity, price, user_id }; // Add user_id to cart item
-  
+
     try {
       const response = await fetch(
         "https://campuseats-ki1c.onrender.com/order_items/add-to-cart",
@@ -85,7 +85,7 @@ const SearchResults = () => {
           body: JSON.stringify(cartItem),
         }
       );
-  
+
       if (response.ok) {
         setModalMessage("Item Add Sussesfuly");
         setShowModal(true);
@@ -109,12 +109,12 @@ const SearchResults = () => {
       console.error("Error adding to cart:", error);
     }
   };
-  
-const [showModal, setShowModal] = useState(false);
-const [modalMessage, setModalMessage] = useState("");
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   return (
     <div className="bg-gray-50 min-h-screen py-10 px-4">
-    {showModal && <Modal message={modalMessage} onClose={() => setShowModal(false)} />}
+      {showModal && <Modal message={modalMessage} onClose={() => setShowModal(false)} />}
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-center text-purple-700 mb-8">
           Search Results
@@ -141,10 +141,15 @@ const [modalMessage, setModalMessage] = useState("");
               >
                 {/* Image */}
                 <img
-                  src={result.image_url || "https://via.placeholder.com/300"}
+                  src={
+                    result.image_url
+                      ? `${process.env.REACT_APP_BACKEND_URL}${result.image_url}`
+                      : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                  }
                   alt={result.name}
                   className="w-full h-48 object-cover"
                 />
+
 
                 {/* Content */}
                 <div className="p-4">
@@ -158,24 +163,24 @@ const [modalMessage, setModalMessage] = useState("");
                     Rs {result.price}
                   </p>
 
-                  
+
                   {/* Handle Availability and Vendor Current Status */}
-                {result.availability === 0 ? (
-                  <p className="text-red-500 text-sm font-semibold mt-4">
-                    Out of Stock
-                  </p>
-                ) : result.current === 0 ? (
-                  <p className="text-gray-500 text-sm font-semibold mt-4">
-                    Vendor is unavailable at this moment
-                  </p>
-                ) : (
-                  <button
-                    onClick={() => handleAddToCart(result.id)}
-                    className="w-full mt-4 bg-purple-500 text-white text-sm py-2 px-3 rounded-md hover:bg-purple-600"
-                  >
-                    Add to Cart
-                  </button>
-                )}
+                  {result.availability === 0 ? (
+                    <p className="text-red-500 text-sm font-semibold mt-4">
+                      Out of Stock
+                    </p>
+                  ) : result.current === 0 ? (
+                    <p className="text-gray-500 text-sm font-semibold mt-4">
+                      Vendor is unavailable at this moment
+                    </p>
+                  ) : (
+                    <button
+                      onClick={() => handleAddToCart(result.id)}
+                      className="w-full mt-4 bg-purple-500 text-white text-sm py-2 px-3 rounded-md hover:bg-purple-600"
+                    >
+                      Add to Cart
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

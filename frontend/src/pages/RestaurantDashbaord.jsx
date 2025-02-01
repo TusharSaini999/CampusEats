@@ -288,7 +288,13 @@ const RestaurantDashboard = () => {
           throw new Error("Failed to fetch orders");
         }
         const data = await response.json();
-        setOrders(data.orders); // Assuming `data.orders` contains the orders array
+        const updatedOrders = data.orders.map((order) => ({
+          ...order,
+          image_url: order.image_url
+            ? `${process.env.REACT_APP_BACKEND_URL}${order.image_url}` // Prepend backend URL if image exists
+            : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg", // Fallback image
+        }));
+        setOrders(updatedOrders); // Assuming `data.orders` contains the orders array
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -722,10 +728,14 @@ const RestaurantDashboard = () => {
                       >
                         <td className="p-4">
                           <img
-                            src={order.image_url} // Assuming `image_url` is available
+                            src={order.image_url
+                              ? `${process.env.REACT_APP_BACKEND_URL}${order.image_url}`
+                              : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                            }
                             alt={order.menu_name}
                             className="w-16 h-16 object-cover rounded-md"
                           />
+
                         </td>
                         <td className="p-4">{order.order_item_id}</td>
                         <td className="p-4">{order.user_id}</td>

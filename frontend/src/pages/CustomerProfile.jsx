@@ -144,10 +144,13 @@ function ProfilePage() {
       <aside className="w-full md:w-1/4 bg-white shadow-lg flex flex-col items-center py-8 px-4">
         <div className="relative mb-6">
           <img
-            src={formData.image || "/profile/main.jpg"}
+            src={formData.image
+              ? `${process.env.REACT_APP_BACKEND_URL}${formData.image}`
+              : `${process.env.REACT_APP_BACKEND_URL}profile/main.jpg`}
             alt={formData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />
+
           <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full cursor-pointer hover:bg-blue-400">
             <input
               type="file"
@@ -223,9 +226,8 @@ function ProfilePage() {
                 value={formData.name || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className={`w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none ${
-                  !isEditing ? "bg-gray-100" : ""
-                }`}
+                className={`w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none ${!isEditing ? "bg-gray-100" : ""
+                  }`}
               />
             </div>
             <div>
@@ -246,9 +248,8 @@ function ProfilePage() {
                 value={formData.phone || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className={`w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none ${
-                  !isEditing ? "bg-gray-100" : ""
-                }`}
+                className={`w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none ${!isEditing ? "bg-gray-100" : ""
+                  }`}
               />
             </div>
             <div>
@@ -259,9 +260,8 @@ function ProfilePage() {
                 value={formData.address || ""}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className={`w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none ${
-                  !isEditing ? "bg-gray-100" : ""
-                }`}
+                className={`w-full border rounded-md px-3 py-2 text-gray-800 focus:outline-none ${!isEditing ? "bg-gray-100" : ""
+                  }`}
               />
             </div>
             {isEditing && (

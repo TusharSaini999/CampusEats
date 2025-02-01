@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const db = require("./db");
 const app = express();
+const path = require("path");
 require('dotenv').config();
 
 const allowedOrigins = ['http://localhost:3000', 'https://campuseats.netlify.app'];
@@ -30,6 +31,8 @@ const deliverRoute = require("./deliver");
 const getmap = require("./getlocationmap"); 
 
 // Use routes
+app.use("/images", express.static(path.join(__dirname, "./images")));
+app.use("/profile", express.static(path.join(__dirname, "./profile")));
 app.use("/users", usersRoute);
 app.use("/vendors", vendorsRoute);
 app.use("/menu", menuRoute);

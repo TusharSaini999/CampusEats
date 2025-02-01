@@ -24,7 +24,7 @@ router.get("/vend", async (req, res) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../frontend/public/images/'));
+    cb(null, path.join(__dirname, './images/'));
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname));

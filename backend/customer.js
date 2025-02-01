@@ -133,7 +133,7 @@ router.get("/customer-profile/:id", async (req, res) => {
 //profile update
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../frontend/public/profile/")); // Save images in the `uploads` folder
+    cb(null, path.join(__dirname, "./profile/")); // Save images in the `./profile/` folder
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}_${file.originalname}`);
@@ -149,7 +149,7 @@ router.put("/profile-update", upload.single("image"), async (req, res) => {
     return res.status(400).json({ message: "User ID and user type are required" });
   }
 
-  let profileImage = req.file ? `/profile/${req.file.filename}` : null;
+  let profileImage = req.file ? `profile/${req.file.filename}` : null;
 
   try {
     let query = "";

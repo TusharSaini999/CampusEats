@@ -32,7 +32,13 @@ const Overmenu = () => {
           params: { vendor_id: userId }
         }
       );
-      setMenu(response.data);
+      const menuWithImages = response.data.map((item) => ({
+        ...item,
+        image_url: item.image_url 
+          ? `${process.env.REACT_APP_BACKEND_URL}${item.image_url}`
+          : `${process.env.REACT_APP_BACKEND_URL}images/coffee.png`,
+      }));
+      setMenu(menuWithImages);
     } catch (error) {
       console.error("Error fetching menu:", error);
     }

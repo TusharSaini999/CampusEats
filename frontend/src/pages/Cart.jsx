@@ -134,12 +134,14 @@ const Cart = () => {
                 <div className="flex items-center space-x-4">
                   <img
                     src={
-                      item.image_url ||
-                      "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                      item.image_url
+                        ? `${process.env.REACT_APP_BACKEND_URL}${item.image_url}`
+                        : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
                     }
                     alt={item.name}
                     className="w-20 h-20 object-cover"
                   />
+
                   <div>
                     <p className="font-semibold">{item.item_name}</p>
                   </div>
