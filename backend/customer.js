@@ -130,7 +130,7 @@ router.get("/customer-profile/:id", async (req, res) => {
   }
 });
 
-
+//profile update
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../frontend/public/profile/")); // Save images in the `uploads` folder

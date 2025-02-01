@@ -5,8 +5,18 @@ const db = require("./db");
 const app = express();
 require('dotenv').config();
 
-// Middleware
-app.use(cors());
+const allowedOrigins = ['http://localhost:3000', 'https://campuseats.netlify.app/'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+}));
 app.use(bodyParser.json());
 
 // Import route files
