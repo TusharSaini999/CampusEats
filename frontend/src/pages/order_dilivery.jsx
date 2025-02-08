@@ -300,7 +300,7 @@ const OrderDetails = () => {
                   <div className="text-gray-600">{order.delivery_boy.name}</div>
 
                   <div className="font-medium text-gray-700">Email</div>
-                  <div className="text-gray-600">{order.delivery_boy.email} INR</div>
+                  <div className="text-gray-600">{order.delivery_boy.email}</div>
 
                   <div className="font-medium text-gray-700">Phone</div>
                   <div className="text-gray-600">{order.delivery_boy.phone}</div>
