@@ -12,7 +12,11 @@ const DeliveryboyDashboard = () => {
   });
   const [orders, setOrders] = useState([]);
   const [allorders, setAllOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [init, setinit] = useState(true);
+  const [listload, setListload] = useState(false);
+  const [listinit, setlistinit] = useState(true);
+  const [serachload, setsearchload] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [userId, setUserId] = useState("");
@@ -34,11 +38,16 @@ const DeliveryboyDashboard = () => {
 
     const fetchDeliveryDetails = async () => {
       try {
+        setLoading(true);
         const response = await axios.get(`https://campuseats-ki1c.onrender.com/delivery/delivery-details?deliveryBoyId=${userId}`);
         setDeliveryDetails(response.data.data);
       } catch (error) {
         console.error("Error fetching delivery details:", error);
+        setinit(false);
+        setLoading(false);
       }
+      setinit(false);
+      setLoading(false);
     };
     if (userId) {
       fetchDeliveryDetails();
@@ -73,15 +82,18 @@ const DeliveryboyDashboard = () => {
   }, [token]); // Dependency on token
   const handleSearch = async () => {
     try {
+      setsearchload(true);
       const response = await fetch(
         `https://campuseats-ki1c.onrender.com/delivery/search-orders?deliveryBoyId=${userId}&searchQuery=${searchQuery}`
       );
       const data = await response.json();
       if (response.ok) {
-        setFilteredOrders(data.orders); // Updated here
+        setFilteredOrders(data.orders);
+        setsearchload(false); // Updated here
         setSearchTerm("0");
       } else {
-        setFilteredOrders([]); // Updated here
+        setFilteredOrders([]);
+        setsearchload(false); // Updated here
         setSearchTerm("1");
       }
     } catch (error) {
@@ -130,10 +142,8 @@ const DeliveryboyDashboard = () => {
           `https://campuseats-ki1c.onrender.com/delivery/pending-orders`
         );
         setOrders(response.data.pendingOrders);
-        setLoading(false);
       } catch (err) {
         setError("Failed to fetch pending orders");
-        setLoading(false);
       }
     };
 
@@ -146,16 +156,19 @@ const DeliveryboyDashboard = () => {
         return;
       }
       try {
-        console.log("Fetching orders for deliveryBoyId:", userId); // Debugging log
+        console.log("Fetching orders for deliveryBoyId:", userId);
+        setListload(true);
         const response = await axios.get(
           `https://campuseats-ki1c.onrender.com/delivery/all-orders?deliveryBoyId=${userId}`
         );
         setAllOrders(response.data.orders);
-        setLoading(false);
+        setListload(false);
+        setlistinit(false);
       } catch (err) {
         console.error("Error fetching delivery details:", err.response?.data || err.message);
         setError("Failed to fetch orders");
-        setLoading(false);
+        setListload(false);
+        setlistinit(false);
       }
     };
 
@@ -163,9 +176,6 @@ const DeliveryboyDashboard = () => {
   }, [userId, allorders]);
 
 
-  if (loading) {
-    return <div className="text-center p-4">Loading...</div>;
-  }
 
   if (error) {
     return <div className="text-center p-4 text-red-500">{error}</div>;
@@ -250,45 +260,69 @@ const DeliveryboyDashboard = () => {
             <p className="text-sm text-white mb-4">Dekivery Boy ID {userData.id}</p>
           </>
         ) : (
-          <p>Loading...</p>
+          <div className="animate-pulse">
+            <div className="h-5 bg-gray-300 rounded w-3/4 mb-2" />
+            <div className="h-4 bg-gray-300 rounded w-1/2 mb-4" />
+            <div className="h-4 bg-gray-300 rounded w-2/3 mb-4" />
+            <div className="h-4 bg-gray-300 rounded w-1/3 mb-4" />
+          </div>
         )}
-        <div className="flex items-center">
-          <span className="mr-3">Open to Work</span>
-          <label className="relative inline-block w-12 h-6">
-            <input
-              type="checkbox"
-              checked={openToWork}
-              onChange={handleToggle}
-              className="hidden"
-            />
-            <span
-              className={`block w-full h-full rounded-full ${openToWork ? "bg-green-500" : "bg-gray-400"
-                } transition-all duration-300`}
-            ></span>
-            <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transform transition-transform duration-300 ${openToWork ? "translate-x-6" : ""
-                }`}
-            ></span>
-          </label>
-        </div>
+        {openToWork !== "undefined" ? (
+          <div className="flex items-center">
+            <span className="mr-3">Open to Work</span>
+            <label className="relative inline-block w-12 h-6">
+              <input
+                type="checkbox"
+                checked={openToWork}
+                onChange={handleToggle}
+                className="hidden"
+              />
+              <span
+                className={`block w-full h-full rounded-full ${openToWork ? "bg-green-500" : "bg-gray-400"} transition-all duration-300`}
+              ></span>
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transform transition-transform duration-300 ${openToWork ? "translate-x-6" : ""}`}
+              ></span>
+            </label>
+          </div>
+        ) : (
+          <div className="flex items-center animate-pulse">
+            <div className="h-5 bg-gray-300 rounded w-20 mr-3" />
+            <div className="relative inline-block w-12 h-6 bg-gray-300 rounded-full">
+              <div className="absolute top-1 left-1 w-4 h-4 bg-gray-400 rounded-full" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
       {/* Summary Cards */}
       <div className="flex-1 p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          {[{ label: "Revenue", value: `₹${deliveryDetails.revenue.toFixed(2)}` },
-          { label: "Total Deliveries", value: deliveryDetails.totalDeliveries },
-          { label: "Accepted Orders", value: deliveryDetails.acceptedOrderCount },
-          { label: "Pending Orders", value: deliveryDetails.pendingOrderCount },
-          { label: "Rejected Orders", value: deliveryDetails.rejectedOrderCount }
-          ].map((card, index) => (
-            <div key={index} className="bg-white p-4 shadow rounded text-center">
-              <h3 className="text-gray-600">{card.label}</h3>
-              <p className="text-2xl font-bold">{card.value}</p>
-            </div>
-          ))}
-        </div>
+        {loading && init ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 animate-pulse">
+            {[...Array(5)].map((_, index) => (
+              <div key={index} className="bg-white p-4 shadow rounded text-center">
+                <div className="h-4 bg-gray-300 rounded w-1/2 mb-2 mx-auto" />
+                <div className="h-6 bg-gray-400 rounded w-1/3 mx-auto" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            {[{ label: "Revenue", value: `₹${deliveryDetails.revenue.toFixed(2)}` },
+            { label: "Total Deliveries", value: deliveryDetails.totalDeliveries },
+            { label: "Accepted Orders", value: deliveryDetails.acceptedOrderCount },
+            { label: "Pending Orders", value: deliveryDetails.pendingOrderCount },
+            { label: "Rejected Orders", value: deliveryDetails.rejectedOrderCount }
+            ].map((card, index) => (
+              <div key={index} className="bg-white p-4 shadow rounded text-center">
+                <h3 className="text-gray-600">{card.label}</h3>
+                <p className="text-2xl font-bold">{card.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
 
         {/* Search Bar */}
         <div className="mb-4">
@@ -305,8 +339,44 @@ const DeliveryboyDashboard = () => {
           >
             Search
           </button>
-
         </div>
+        {serachload && (
+          <div>
+          <div className="bg-gray-100 rounded-lg shadow overflow-x-auto animate-pulse">
+            <table className="min-w-full table-auto">
+              <thead className="bg-gray-300">
+                <tr>
+                  {[
+                    "Order ID",
+                    "Customer ID",
+                    "Customer Name",
+                    "Order Date",
+                    "Amount",
+                    "Delivery Address",
+                    "Status",
+                    "Actions",
+                  ].map((head) => (
+                    <th key={head} className="py-3 px-4 text-left bg-gray-300">
+                      <div className="h-4 bg-gray-400 rounded w-3/4"></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[...Array(3)].map((_, index) => (
+                  <tr key={index} className="border-b">
+                    {Array(8).fill().map((_, i) => (
+                      <td key={i} className="py-3 px-4">
+                        <div className="h-4 bg-gray-300 rounded w-full"></div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        )}
         {filteredOrders.length > 0 && (
           <div>
             <h2 className="text-2xl font-bold mb-4">Search Results</h2>
@@ -360,7 +430,7 @@ const DeliveryboyDashboard = () => {
             </div>
           </div>
         )}
-        {searchTerm=="1" && (<div className="text-center text-gray-600 mt-8">
+        {searchTerm == "1" && (<div className="text-center text-gray-600 mt-8">
           <h2 className="text-xl font-semibold mb-2">No Results Found</h2>
           <p>We couldn't find any orders matching your search criteria.</p>
         </div>)}
@@ -425,18 +495,53 @@ const DeliveryboyDashboard = () => {
             </div>
           )}
 
-          <div>
-            {loading ? (
-              <p>Loading orders...</p>
-            ) : (
+          {listload && listinit ? (
+            <div>
+              <div className="bg-gray-100 rounded-lg shadow overflow-x-auto animate-pulse">
+                <table className="min-w-full table-auto">
+                  <thead className="bg-gray-300">
+                    <tr>
+                      {[
+                        "Order ID",
+                        "Customer ID",
+                        "Customer Name",
+                        "Order Date",
+                        "Amount",
+                        "Delivery Address",
+                        "Status",
+                        "Actions",
+                      ].map((head) => (
+                        <th key={head} className="py-3 px-4 text-left bg-gray-300">
+                          <div className="h-4 bg-gray-400 rounded w-3/4"></div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(8)].map((_, index) => (
+                      <tr key={index} className="border-b">
+                        {Array(8).fill().map((_, i) => (
+                          <td key={i} className="py-3 px-4">
+                            <div className="h-4 bg-gray-300 rounded w-full"></div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div>
               <>
                 {renderOrderTable(acceptedOrders, "Accepted")}
                 {renderOrderTable(outForDeliveryOrders, "Out for Delivery")}
                 {renderOrderTable(deliveredOrders, "Delivered")}
                 {renderOrderTable(rejectedOrders, "Rejected")}
               </>
-            )}
-          </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

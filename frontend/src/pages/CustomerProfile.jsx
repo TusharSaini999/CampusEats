@@ -68,7 +68,7 @@ function ProfilePage() {
       if (selectedImage) {
         formDataObj.append("image", selectedImage);
       }
-
+      setLoading(true);
       await axios.put("https://campuseats-ki1c.onrender.com/users/profile-update", formDataObj, {
         headers: { Authorization: token, "Content-Type": "multipart/form-data" },
       });
@@ -77,6 +77,7 @@ function ProfilePage() {
       setIsEditing(false);
       setPassword("");
       openModal("Profile updated successfully!");
+      setLoading(false);
     } catch (err) {
       console.error("Error saving profile data:", err.message);
       openModal(
@@ -108,9 +109,51 @@ function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-yellow-50">
-        <p>Loading...</p>
-      </div>
+      <div className="flex flex-col md:flex-row h-screen">
+        <aside className="w-full md:w-1/4 bg-white shadow-lg flex flex-col items-center py-8 px-4">
+          <div className="relative mb-6">
+            <div className="w-24 h-24 bg-gray-200 animate-pulse rounded-full mb-4"></div>
+          </div>
+          <div className="w-32 h-6 bg-gray-200 animate-pulse rounded mb-1"></div>
+          <div className="w-48 h-4 bg-gray-200 animate-pulse rounded mb-6"></div>
+
+        </aside>
+        <main className="flex-1 bg-gradient-to-br from-blue-100 to-yellow-50 p-8">
+          <div className="bg-white shadow-xl rounded-2xl p-8">
+            <div className="flex justify-between items-center mb-6">
+              <div className="w-32 h-6 bg-gray-200 animate-pulse rounded mb-1"></div>
+              <div className="w-32 h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="w-full h-6 bg-gray-200 animate-pulse rounded mb-2"></div>
+                <div className="w-full h-10 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+              <div>
+                <div className="w-full h-6 bg-gray-200 animate-pulse rounded mb-2"></div>
+                <div className="w-full h-10 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+              <div>
+                <div className="w-full h-6 bg-gray-200 animate-pulse rounded mb-2"></div>
+                <div className="w-full h-10 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+              <div>
+                <div className="w-full h-6 bg-gray-200 animate-pulse rounded mb-2"></div>
+                <div className="w-full h-10 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+              {isEditing && (
+                <div>
+                  <div className="w-full h-6 bg-gray-200 animate-pulse rounded mb-2"></div>
+                  <div className="w-full h-10 bg-gray-200 animate-pulse rounded"></div>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+
+
+      </div >
     );
   }
 
@@ -145,7 +188,7 @@ function ProfilePage() {
       <aside className="w-full md:w-1/4 bg-white shadow-lg flex flex-col items-center py-8 px-4">
         <div className="relative mb-6">
           <img
-            src={formData.imagePreview || `${process.env.REACT_APP_BACKEND_URL}${formData.image || "profile/main.jpg"}`}
+            src={formData.imagePreview || `${formData.image || "https://res.cloudinary.com/dsljhnanm/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg"}`}
             alt={formData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />

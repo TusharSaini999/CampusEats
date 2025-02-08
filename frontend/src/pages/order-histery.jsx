@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState("");
+  const [isLoading, setisLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,110 +20,157 @@ const OrderHistory = () => {
 
   const fetchOrderHistory = async (userId) => {
     try {
+      setisLoading(true);
       const response = await axios.post("https://campuseats-ki1c.onrender.com/orders/history", {
         user_id: userId,
       });
 
       if (response.data.orders) {
-        const sortedOrders = response.data.orders.sort((a, b) => b.id - a.id); // Sort in descending order by ID
+        const sortedOrders = response.data.orders.sort((a, b) => b.id - a.id);
         setOrders(sortedOrders);
+        setisLoading(false);
       } else {
         setError("No orders found.");
+        setisLoading(false);
       }
     } catch (err) {
       console.error("Error fetching order history:", err);
       setError("Failed to fetch order history.");
+      setisLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
-      <div className="bg-white p-8 rounded-lg shadow-md text-center w-full sm:w-96 lg:w-1/2 xl:w-1/3">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Order History</h2>
-
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
-        {/* Order List */}
-        {orders.length > 0 ? (
-          <div className="space-y-4">
-            {orders.map((order) => {
-              const orderDate = new Date(order.created_at);
-              const date = orderDate.toLocaleDateString();
-              const time = orderDate.toLocaleTimeString();
-
-              return (
-                <div
-                  key={order.order_id}
-                  className={`flex flex-col sm:flex-row bg-gray-100 p-4 rounded-lg shadow-sm ${order.status === "rejected"
-                      ? "bg-red-100"
-                      : order.status === "delivered"
-                        ? "bg-green-100"
-                        : ""
-                    }`}
-                >
-                  <div className="flex-1">
-                    {/* Order ID */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Order ID:</h3>
-                      <p className="text-gray-600">{order.id}</p>
-                    </div>
-
-                    {/* Date */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Date:</h3>
-                      <p className="text-gray-600">{date}</p>
-                    </div>
-
-                    {/* Time */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Time:</h3>
-                      <p className="text-gray-600">{time}</p>
-                    </div>
-
-                    {/* Total Price */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Total Price:</h3>
-                      <p className="text-gray-600">Rs {order.total_price}</p>
-                    </div>
-
-                    {/* Payment Status */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Payment Status:</h3>
-                      <p className="text-gray-600">{order.payment_status}</p>
-                    </div>
-
-                    {/* Delivery Address */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Delivery Address:</h3>
-                      <p className="text-gray-600">{order.delivery_address}</p>
-                    </div>
-
-                    {/* Delivery Status */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700">Delivery Status:</h3>
-                      <p className="text-gray-600">{order.status}</p>
-                    </div>
-
-                    {/* Details Button */}
-                    <div className="flex items-center justify-end">
-                      <button
-                        onClick={() => navigate(`/order-dilivery/${order.id}`)}
-                        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600"
-                      >
-                        Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+    <div className="min-h-screen min-w-screen bg-gray-100 flex items-center justify-center py-8 px-4">
+      <div className="bg-white min-h-screen p-8 rounded-lg shadow-lg w-full">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">Order History</h2>
+  
+        {error && <p className="text-red-500 text-center mb-6">{error}</p>}
+  
+        {/* Loading Skeleton */}
+        {isLoading ? (
+          <div className="space-y-6">
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-200 text-gray-600 text-sm">
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                    <th className="p-4 text-left">
+                      <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(5)].map((_, index) => (
+                    <tr key={index} className="text-sm text-gray-600 border-b">
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                      <td className="p-4">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
-          <p>No orders found.</p>
+          // Order List
+          orders.length > 0 ? (
+            <div className="space-y-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">Order ID</th>
+                      <th className="p-4 text-left">Date</th>
+                      <th className="p-4 text-left">Time</th>
+                      <th className="p-4 text-left">Total Price</th>
+                      <th className="p-4 text-left">Payment Status</th>
+                      <th className="p-4 text-left">Delivery Address</th>
+                      <th className="p-4 text-left">Delivery Status</th>
+                      <th className="p-4 text-left">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order) => {
+                      const orderDate = new Date(order.created_at);
+                      const date = orderDate.toLocaleDateString();
+                      const time = orderDate.toLocaleTimeString();
+  
+                      return (
+                        <tr
+                          key={order.order_id}
+                          className={`text-sm text-gray-600 border-b ${order.status === "rejected"
+                            ? "bg-red-100"
+                            : order.status === "delivered"
+                              ? "bg-green-100"
+                              : ""
+                          }`}
+                        >
+                          <td className="p-4">{order.id}</td>
+                          <td className="p-4">{date}</td>
+                          <td className="p-4">{time}</td>
+                          <td className="p-4">Rs {order.total_price}</td>
+                          <td className="p-4">{order.payment_status}</td>
+                          <td className="p-4">{order.delivery_address}</td>
+                          <td className="p-4">{order.status}</td>
+                          <td className="p-4">
+                            <button
+                              onClick={() => navigate(`/order-dilivery/${order.id}`)}
+                              className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600"
+                            >
+                              Details
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 text-lg">No orders found.</p>
+          )
         )}
       </div>
     </div>
   );
+  
 };
 
 export default OrderHistory;

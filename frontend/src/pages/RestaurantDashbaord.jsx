@@ -25,10 +25,14 @@ const RestaurantDashboard = () => {
   const [orderStatus, setOrderStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(""); // For the selected order ID
-
-
+  const [adloading, setadloading] = useState(false);
+  const [initail, setinitail] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [issLoading, setsIsLoading] = useState(false);
+  const [issinit, setsIsinit] = useState(true);
+  const [islLoading, setlIsLoading] = useState(false);
   const [orderDetails, setOrderDetails] = useState({
-    totalEarnings: 0,
+    totalEarningsi: 0,
     totalCompletedOrders: 0,
     totalPendingOrders: 0,
     totalAcceptedOrders: 0,
@@ -52,6 +56,7 @@ const RestaurantDashboard = () => {
     }
 
     try {
+      setsIsLoading(true);
       const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/search-orders/${userId}?orderId=${orderId}`);
       const data = await response.json();
 
@@ -59,20 +64,24 @@ const RestaurantDashboard = () => {
 
       if (response.ok) {
         if (data.result && Array.isArray(data.result) && data.result.length > 0) {
-          setResult(data.result); // Set the result state if it's an array and not empty
+          setResult(data.result);
+          setsIsLoading(false); // Set the result state if it's an array and not empty
           setError('');
         } else {
           setResult([]);
           setError('No orders found.');
+          setsIsLoading(false);
         }
       } else {
         setResult([]);
         setError(data.message || 'No orders found.');
+        setsIsLoading(false);
       }
     } catch (error) {
       console.error('Error fetching search results:', error);
       setResult([]);
       setError('An error occurred while searching.');
+      setsIsLoading(false);
     }
   };
   // Fetch status when an order is selected
@@ -85,11 +94,24 @@ const RestaurantDashboard = () => {
           setErrorMessage(""); // Clear error messages
         })
         .catch((error) => {
-          console.error("Error fetching order status:", error);
-          setErrorMessage("Failed to fetch order status. Please try again.");
+          if (error.response) {
+            const { errorCode, message } = error.response.data;
+  
+            // Handle custom error code 1001
+            if (errorCode === 1001) {
+              setErrorMessage(message || "First accept the order.");
+            } else {
+              setErrorMessage(`Error: ${message || "Failed to fetch order status."}`);
+            }
+          } else if (error.request) {
+            setErrorMessage("No response from the server. Please check your connection.");
+          } else {
+            setErrorMessage("An error occurred. Please try again.");
+          }
         });
     }
   }, [selectedOrder, userId]);
+  
   const handleGenerateOtp = () => {
     console.log(selectedOrder);
     axios
@@ -223,18 +245,22 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     const fetchVendorStatus = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/vendor-status/${vendor_id}`);
         const data = await response.json();
 
         if (response.ok) {
           setIsOnline(data.current === 1);
+          setIsLoading(false);
         } else {
           console.error("Error fetching vendor status:", data.error);
           setIsOnline(false);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error:", error);
         setIsOnline(false);
+        setIsLoading(false);
       }
     };
 
@@ -247,6 +273,7 @@ const RestaurantDashboard = () => {
   const toggleOnlineStatus = async () => {
     const newStatus = isOnline ? 0 : 1;
     try {
+      setIsLoading(true);
       const response = await fetch("https://campuseats-ki1c.onrender.com/vendors/update-vendor-status", {
         method: "POST",
         headers: {
@@ -263,6 +290,7 @@ const RestaurantDashboard = () => {
       if (response.ok) {
 
         setIsOnline(!isOnline);
+        setIsLoading(false);
       } else {
         console.error("Error updating status:", data.error);
         alert("Failed to update vendor status. Try again.");
@@ -283,6 +311,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setlIsLoading(true);
         const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/orders/${userId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch orders");
@@ -291,10 +320,13 @@ const RestaurantDashboard = () => {
         const updatedOrders = data.orders.map((order) => ({
           ...order,
           image_url: order.image_url
-            ? `${process.env.REACT_APP_BACKEND_URL}${order.image_url}` // Prepend backend URL if image exists
-            : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg", // Fallback image
+            ? `${order.image_url}` // Prepend backend URL if image exists
+            : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg", // Fallback image
         }));
-        setOrders(updatedOrders); // Assuming `data.orders` contains the orders array
+        setOrders(updatedOrders);
+        setlIsLoading(false);
+        setsIsinit(false);
+        // Assuming `data.orders` contains the orders array
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -321,6 +353,7 @@ const RestaurantDashboard = () => {
       }
 
       try {
+        setadloading(true);
         const response = await axios.get(
           "https://campuseats-ki1c.onrender.com/users/profile",
           {
@@ -330,6 +363,9 @@ const RestaurantDashboard = () => {
           }
         );
         setProfileData(response.data);
+        setadloading(false);
+
+        setinitail(false);
       } catch (err) {
         console.error("Error fetching profile data:", err.message);
       }
@@ -356,50 +392,76 @@ const RestaurantDashboard = () => {
       totalPrepared,
     });
   }, [orders]);
+
   return (
     <div className="flex h-full flex-col lg:flex-row">
       {/* Sidebar */}
       <aside className="w-full lg:w-1/5 bg-gray-50 text-black flex flex-col">
         <div className="p-4 border-b border-gray-700">
-          <h1 className="text-2xl font-bold">Name: {profileData.name || 'N/A'}</h1>
-          <p className="text-sm text-gray-400">Address: {profileData.address || 'N/A'}</p>
-          <p className="text-sm text-gray-400">Mobile No: {profileData.phone || 'N/A'}</p>
-          <p className="text-sm text-gray-400">Restaurant Id: {profileData.id || 'N/A'}</p>
+          {/* Skeleton Loader */}
+          {adloading && initail ? (
+            <div className="p-4  border-gray-700 animate-pulse">
+              <div className="h-8 bg-gray-300 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-1/3 mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold">Name: {profileData.name || 'N/A'}</h1>
+              <p className="text-sm text-gray-400">Address: {profileData.address || 'N/A'}</p>
+              <p className="text-sm text-gray-400">Mobile No: {profileData.phone || 'N/A'}</p>
+              <p className="text-sm text-gray-400">Restaurant Id: {profileData.id || 'N/A'}</p>
+              <p className="text-sm text-gray-400">Total Earnings: {profileData.total_en || 'N/A'}</p>
+            </>
+          )}
         </div>
+
         <nav className="flex-grow p-4 space-y-4 border-b border-gray-700">
-          <div>
-            <h2 className="text-lg font-semibold">Order Details</h2>
-            <ul className="mt-2 space-y-2">
-              <li className="flex items-center justify-between text-sm">
-                <span>Total Earnings :</span>
-                <span className="text-gray-400">{profileData.total_en || 'N/A'}</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span>Order Completed :</span>
-                <span className="text-gray-400">{orderDetails.totalCompletedOrders || 'N/A'}</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span>Pending Orders :</span>
-                <span className="text-gray-400">{orderDetails.totalPendingOrders || 'N/A'}</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span>Accepted Orders :</span>
-                <span className="text-gray-400">{orderDetails.totalAcceptedOrders || 'N/A'}</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span>Prepared Orders :</span>
-                <span className="text-gray-400">{orderDetails.totalPrepared || 'N/A'}</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span>Out for Pickup Orders :</span>
-                <span className="text-gray-400">{orderDetails.totalOutforPickupOrders || 'N/A'}</span>
-              </li>
-              <li className="flex items-center justify-between text-sm">
-                <span className="text-red-400">Rejected Orders :</span>
-                <span className="text-red-400">{orderDetails.totalRejectedOrders || 'N/A'}</span>
-              </li>
-            </ul>
-          </div>
+          {islLoading && issinit ? (
+            <div>
+              <div className="h-6 bg-gray-300 rounded w-3/4 mb-2"></div>
+              <ul className="mt-2 space-y-2">
+                {[...Array(6)].map((_, index) => (
+                  <li key={index} className="flex items-center justify-between text-sm">
+                    <span className="w-32 bg-gray-300 h-4 rounded-md animate-pulse"></span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-lg font-semibold">Order Details</h2>
+              <ul className="mt-2 space-y-2">
+                <li className="flex items-center justify-between text-sm">
+                  <span>Order Completed :</span>
+                  <span className="text-gray-400">{orderDetails.totalCompletedOrders || 'N/A'}</span>
+                </li>
+                <li className="flex items-center justify-between text-sm">
+                  <span>Pending Orders :</span>
+                  <span className="text-gray-400">{orderDetails.totalPendingOrders || 'N/A'}</span>
+                </li>
+                <li className="flex items-center justify-between text-sm">
+                  <span>Accepted Orders :</span>
+                  <span className="text-gray-400">{orderDetails.totalAcceptedOrders || 'N/A'}</span>
+                </li>
+                <li className="flex items-center justify-between text-sm">
+                  <span>Prepared Orders :</span>
+                  <span className="text-gray-400">{orderDetails.totalPrepared || 'N/A'}</span>
+                </li>
+                <li className="flex items-center justify-between text-sm">
+                  <span>Out for Pickup Orders :</span>
+                  <span className="text-gray-400">{orderDetails.totalOutforPickupOrders || 'N/A'}</span>
+                </li>
+                <li className="flex items-center justify-between text-sm">
+                  <span className="text-red-400">Rejected Orders :</span>
+                  <span className="text-red-400">{orderDetails.totalRejectedOrders || 'N/A'}</span>
+                </li>
+              </ul>
+            </div>
+          )}
+
         </nav>
       </aside>
 
@@ -439,9 +501,11 @@ const RestaurantDashboard = () => {
             <button
               className={`text-white px-4 py-2 rounded-lg ${isOnline ? "bg-green-500" : "bg-red-500"}`}
               onClick={toggleOnlineStatus}
+              disabled={isLoading} // Disable button while loading
             >
-              {isOnline ? "Online" : "Offline"}
+              {isLoading ? "Loading..." : isOnline ? "Online" : "Offline"}
             </button>
+
           </div>
         </header>
         {modalOpen && (
@@ -638,7 +702,7 @@ const RestaurantDashboard = () => {
 
               {/* Display Messages Based on Status */}
               {orderStatus === "Completed" && (
-                <div className="text-red-600 text-sm font-semibold mb-4">
+                <div className="text-green-600 text-sm font-semibold mb-4">
                   This order has already been completed.
                 </div>
               )}
@@ -649,7 +713,7 @@ const RestaurantDashboard = () => {
               )}
 
               {/* Action Buttons */}
-              {!orderStatus || orderStatus === "Out for Pickup" ? (
+              {orderStatus && orderStatus === "Out for Pickup" ? (
                 <div className="flex flex-col items-center gap-4 mb-4">
                   {/* Generate OTP Button */}
                   {selectedOrder && !isOtpGenerated && (
@@ -699,7 +763,92 @@ const RestaurantDashboard = () => {
         )}
         {/* Order List */}
         <section className="p-4">
-          {result && result.length > 0 && (
+          {issLoading ? (
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold mb-4 animate-pulse bg-gray-300 w-1/3 h-6"></h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-200 text-gray-600 text-sm">
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(3)].map((_, index) => (
+                      <tr key={index} className="text-sm text-gray-600 border-b">
+                        <td className="p-4">
+                          <div className="h-16 bg-gray-300 animate-pulse rounded-md"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : result && result.length > 0 ? (
             <div>
               <h3 className="text-xl font-semibold mb-4">Search Results</h3>
               <div className="overflow-x-auto">
@@ -729,13 +878,12 @@ const RestaurantDashboard = () => {
                         <td className="p-4">
                           <img
                             src={order.image_url
-                              ? `${process.env.REACT_APP_BACKEND_URL}${order.image_url}`
-                              : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                              ? `${order.image_url}`
+                              : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
                             }
                             alt={order.menu_name}
                             className="w-16 h-16 object-cover rounded-md"
                           />
-
                         </td>
                         <td className="p-4">{order.order_item_id}</td>
                         <td className="p-4">{order.user_id}</td>
@@ -754,292 +902,382 @@ const RestaurantDashboard = () => {
                 </table>
               </div>
             </div>
+          ) : (
+            <></>
           )}
+
 
 
           {/* Order Rows */}
           {/* Pending Orders */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Pending Orders</h2>
-            {orders.filter(order => !order.vender_status).length === 0 ? (
-              <p className="text-gray-500">No orders in this status</p>
-            ) : (
+          {islLoading && issinit ? (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold mb-4 animate-pulse bg-gray-300 w-1/3 h-6"></h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full table-auto">
                   <thead>
                     <tr className="bg-gray-200 text-gray-600 text-sm">
-                      <th className="p-4 text-left">Image</th>
-                      <th className="p-4 text-left">Order Item ID</th>
-                      <th className="p-4 text-left">User ID</th>
-                      <th className="p-4 text-left">User Name</th>
-                      <th className="p-4 text-left">Phone</th>
-                      <th className="p-4 text-left">Menu Name</th>
-                      <th className="p-4 text-left">Quantity</th>
-                      <th className="p-4 text-left">Total Price</th>
-                      <th className="p-4 text-left">Delivery Address</th>
-                      <th className="p-4 text-left">Payment Status</th>
-                      <th className="p-4 text-left">Order Date</th>
-                      <th className="p-4 text-left">Vendor Status</th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
+                      <th className="p-4 text-left">
+                        <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.filter(order => !order.vender_status).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                        <td className="p-4">{order.order_item_id}</td>
-                        <td className="p-4">{order.user_id}</td>
-                        <td className="p-4">{order.user_name}</td>
-                        <td className="p-4">{order.user_phone}</td>
-                        <td className="p-4">{order.menu_name}</td>
-                        <td className="p-4">{order.quantity}</td>
-                        <td className="p-4">{order.total_price} Rs</td>
-                        <td className="p-4">{order.delivery_address}</td>
-                        <td className="p-4">{order.payment_status}</td>
-                        <td className="p-4">{formatDateTime(order.order_date)}</td>
-                        <td className="p-4">{order.vender_status || 'Pending'}</td>
+                    {[...Array(8)].map((_, index) => (
+                      <tr key={index} className="text-sm text-gray-600 border-b">
+                        <td className="p-4">
+                          <div className="h-16 bg-gray-300 animate-pulse rounded-md"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
+                        <td className="p-4">
+                          <div className="h-4 bg-gray-300 animate-pulse rounded"></div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
-
-          {/* Accepted Orders */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Accepted Orders</h2>
-            {orders.filter(order => order.vender_status === 'Accepted').length === 0 ? (
-              <p className="text-gray-500">No orders in this status</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-600 text-sm">
-                      <th className="p-4 text-left">Image</th>
-                      <th className="p-4 text-left">Order Item ID</th>
-                      <th className="p-4 text-left">User ID</th>
-                      <th className="p-4 text-left">User Name</th>
-                      <th className="p-4 text-left">Phone</th>
-                      <th className="p-4 text-left">Menu Name</th>
-                      <th className="p-4 text-left">Quantity</th>
-                      <th className="p-4 text-left">Total Price</th>
-                      <th className="p-4 text-left">Delivery Address</th>
-                      <th className="p-4 text-left">Payment Status</th>
-                      <th className="p-4 text-left">Order Date</th>
-                      <th className="p-4 text-left">Vendor Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.filter(order => order.vender_status === 'Accepted').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                        <td className="p-4">{order.order_item_id}</td>
-                        <td className="p-4">{order.user_id}</td>
-                        <td className="p-4">{order.user_name}</td>
-                        <td className="p-4">{order.user_phone}</td>
-                        <td className="p-4">{order.menu_name}</td>
-                        <td className="p-4">{order.quantity}</td>
-                        <td className="p-4">{order.total_price} Rs</td>
-                        <td className="p-4">{order.delivery_address}</td>
-                        <td className="p-4">{order.payment_status}</td>
-                        <td className="p-4">{formatDateTime(order.order_date)}</td>
-                        <td className="p-4">{order.vender_status || 'Pending'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            </div>
+          ) : (
+            <div>
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">Pending Orders</h2>
+                {orders.filter(order => !order.vender_status).length === 0 ? (
+                  <p className="text-gray-500">No orders in this status</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 text-sm">
+                          <th className="p-4 text-left">Image</th>
+                          <th className="p-4 text-left">Order Item ID</th>
+                          <th className="p-4 text-left">User ID</th>
+                          <th className="p-4 text-left">User Name</th>
+                          <th className="p-4 text-left">Phone</th>
+                          <th className="p-4 text-left">Menu Name</th>
+                          <th className="p-4 text-left">Quantity</th>
+                          <th className="p-4 text-left">Total Price</th>
+                          <th className="p-4 text-left">Delivery Address</th>
+                          <th className="p-4 text-left">Payment Status</th>
+                          <th className="p-4 text-left">Order Date</th>
+                          <th className="p-4 text-left">Vendor Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.filter(order => !order.vender_status).sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                          <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                            <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                            <td className="p-4">{order.order_item_id}</td>
+                            <td className="p-4">{order.user_id}</td>
+                            <td className="p-4">{order.user_name}</td>
+                            <td className="p-4">{order.user_phone}</td>
+                            <td className="p-4">{order.menu_name}</td>
+                            <td className="p-4">{order.quantity}</td>
+                            <td className="p-4">{order.total_price} Rs</td>
+                            <td className="p-4">{order.delivery_address}</td>
+                            <td className="p-4">{order.payment_status}</td>
+                            <td className="p-4">{formatDateTime(order.order_date)}</td>
+                            <td className="p-4">{order.vender_status || 'Pending'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Prepared Orders */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Prepared Orders</h2>
-            {orders.filter(order => order.vender_status === 'Prepared').length === 0 ? (
-              <p className="text-gray-500">No orders in this status</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-600 text-sm">
-                      <th className="p-4 text-left">Image</th>
-                      <th className="p-4 text-left">Order Item ID</th>
-                      <th className="p-4 text-left">User ID</th>
-                      <th className="p-4 text-left">User Name</th>
-                      <th className="p-4 text-left">Phone</th>
-                      <th className="p-4 text-left">Menu Name</th>
-                      <th className="p-4 text-left">Quantity</th>
-                      <th className="p-4 text-left">Total Price</th>
-                      <th className="p-4 text-left">Delivery Address</th>
-                      <th className="p-4 text-left">Payment Status</th>
-                      <th className="p-4 text-left">Order Date</th>
-                      <th className="p-4 text-left">Vendor Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.filter(order => order.vender_status === 'Prepared').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                        <td className="p-4">{order.order_item_id}</td>
-                        <td className="p-4">{order.user_id}</td>
-                        <td className="p-4">{order.user_name}</td>
-                        <td className="p-4">{order.user_phone}</td>
-                        <td className="p-4">{order.menu_name}</td>
-                        <td className="p-4">{order.quantity}</td>
-                        <td className="p-4">{order.total_price} Rs</td>
-                        <td className="p-4">{order.delivery_address}</td>
-                        <td className="p-4">{order.payment_status}</td>
-                        <td className="p-4">{formatDateTime(order.order_date)}</td>
-                        <td className="p-4">{order.vender_status || 'Pending'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Accepted Orders */}
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">Accepted Orders</h2>
+                {orders.filter(order => order.vender_status === 'Accepted').length === 0 ? (
+                  <p className="text-gray-500">No orders in this status</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 text-sm">
+                          <th className="p-4 text-left">Image</th>
+                          <th className="p-4 text-left">Order Item ID</th>
+                          <th className="p-4 text-left">User ID</th>
+                          <th className="p-4 text-left">User Name</th>
+                          <th className="p-4 text-left">Phone</th>
+                          <th className="p-4 text-left">Menu Name</th>
+                          <th className="p-4 text-left">Quantity</th>
+                          <th className="p-4 text-left">Total Price</th>
+                          <th className="p-4 text-left">Delivery Address</th>
+                          <th className="p-4 text-left">Payment Status</th>
+                          <th className="p-4 text-left">Order Date</th>
+                          <th className="p-4 text-left">Vendor Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.filter(order => order.vender_status === 'Accepted').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                          <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                            <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                            <td className="p-4">{order.order_item_id}</td>
+                            <td className="p-4">{order.user_id}</td>
+                            <td className="p-4">{order.user_name}</td>
+                            <td className="p-4">{order.user_phone}</td>
+                            <td className="p-4">{order.menu_name}</td>
+                            <td className="p-4">{order.quantity}</td>
+                            <td className="p-4">{order.total_price} Rs</td>
+                            <td className="p-4">{order.delivery_address}</td>
+                            <td className="p-4">{order.payment_status}</td>
+                            <td className="p-4">{formatDateTime(order.order_date)}</td>
+                            <td className="p-4">{order.vender_status || 'Pending'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Out for Pickup Orders */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Out for Pickup Orders</h2>
-            {orders.filter(order => order.vender_status === 'Out for Pickup').length === 0 ? (
-              <p className="text-gray-500">No orders in this status</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-600 text-sm">
-                      <th className="p-4 text-left">Image</th>
-                      <th className="p-4 text-left">Order Item ID</th>
-                      <th className="p-4 text-left">User ID</th>
-                      <th className="p-4 text-left">User Name</th>
-                      <th className="p-4 text-left">Phone</th>
-                      <th className="p-4 text-left">Menu Name</th>
-                      <th className="p-4 text-left">Quantity</th>
-                      <th className="p-4 text-left">Total Price</th>
-                      <th className="p-4 text-left">Delivery Address</th>
-                      <th className="p-4 text-left">Payment Status</th>
-                      <th className="p-4 text-left">Order Date</th>
-                      <th className="p-4 text-left">Vendor Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.filter(order => order.vender_status === 'Out for Pickup').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                        <td className="p-4">{order.order_item_id}</td>
-                        <td className="p-4">{order.user_id}</td>
-                        <td className="p-4">{order.user_name}</td>
-                        <td className="p-4">{order.user_phone}</td>
-                        <td className="p-4">{order.menu_name}</td>
-                        <td className="p-4">{order.quantity}</td>
-                        <td className="p-4">{order.total_price} Rs</td>
-                        <td className="p-4">{order.delivery_address}</td>
-                        <td className="p-4">{order.payment_status}</td>
-                        <td className="p-4">{formatDateTime(order.order_date)}</td>
-                        <td className="p-4">{order.vender_status || 'Pending'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Prepared Orders */}
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">Prepared Orders</h2>
+                {orders.filter(order => order.vender_status === 'Prepared').length === 0 ? (
+                  <p className="text-gray-500">No orders in this status</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 text-sm">
+                          <th className="p-4 text-left">Image</th>
+                          <th className="p-4 text-left">Order Item ID</th>
+                          <th className="p-4 text-left">User ID</th>
+                          <th className="p-4 text-left">User Name</th>
+                          <th className="p-4 text-left">Phone</th>
+                          <th className="p-4 text-left">Menu Name</th>
+                          <th className="p-4 text-left">Quantity</th>
+                          <th className="p-4 text-left">Total Price</th>
+                          <th className="p-4 text-left">Delivery Address</th>
+                          <th className="p-4 text-left">Payment Status</th>
+                          <th className="p-4 text-left">Order Date</th>
+                          <th className="p-4 text-left">Vendor Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.filter(order => order.vender_status === 'Prepared').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                          <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                            <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                            <td className="p-4">{order.order_item_id}</td>
+                            <td className="p-4">{order.user_id}</td>
+                            <td className="p-4">{order.user_name}</td>
+                            <td className="p-4">{order.user_phone}</td>
+                            <td className="p-4">{order.menu_name}</td>
+                            <td className="p-4">{order.quantity}</td>
+                            <td className="p-4">{order.total_price} Rs</td>
+                            <td className="p-4">{order.delivery_address}</td>
+                            <td className="p-4">{order.payment_status}</td>
+                            <td className="p-4">{formatDateTime(order.order_date)}</td>
+                            <td className="p-4">{order.vender_status || 'Pending'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Completed Orders */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Completed Orders</h2>
-            {orders.filter(order => order.vender_status === 'Completed').length === 0 ? (
-              <p className="text-gray-500">No orders in this status</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-600 text-sm">
-                      <th className="p-4 text-left">Image</th>
-                      <th className="p-4 text-left">Order Item ID</th>
-                      <th className="p-4 text-left">User ID</th>
-                      <th className="p-4 text-left">User Name</th>
-                      <th className="p-4 text-left">Phone</th>
-                      <th className="p-4 text-left">Menu Name</th>
-                      <th className="p-4 text-left">Quantity</th>
-                      <th className="p-4 text-left">Total Price</th>
-                      <th className="p-4 text-left">Delivery Address</th>
-                      <th className="p-4 text-left">Payment Status</th>
-                      <th className="p-4 text-left">Order Date</th>
-                      <th className="p-4 text-left">Vendor Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.filter(order => order.vender_status === 'Completed').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
-                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                        <td className="p-4">{order.order_item_id}</td>
-                        <td className="p-4">{order.user_id}</td>
-                        <td className="p-4">{order.user_name}</td>
-                        <td className="p-4">{order.user_phone}</td>
-                        <td className="p-4">{order.menu_name}</td>
-                        <td className="p-4">{order.quantity}</td>
-                        <td className="p-4">{order.total_price} Rs</td>
-                        <td className="p-4">{order.delivery_address}</td>
-                        <td className="p-4">{order.payment_status}</td>
-                        <td className="p-4">{formatDateTime(order.order_date)}</td>
-                        <td className="p-4">{order.vender_status || 'Pending'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Out for Pickup Orders */}
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">Out for Pickup Orders</h2>
+                {orders.filter(order => order.vender_status === 'Out for Pickup').length === 0 ? (
+                  <p className="text-gray-500">No orders in this status</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 text-sm">
+                          <th className="p-4 text-left">Image</th>
+                          <th className="p-4 text-left">Order Item ID</th>
+                          <th className="p-4 text-left">User ID</th>
+                          <th className="p-4 text-left">User Name</th>
+                          <th className="p-4 text-left">Phone</th>
+                          <th className="p-4 text-left">Menu Name</th>
+                          <th className="p-4 text-left">Quantity</th>
+                          <th className="p-4 text-left">Total Price</th>
+                          <th className="p-4 text-left">Delivery Address</th>
+                          <th className="p-4 text-left">Payment Status</th>
+                          <th className="p-4 text-left">Order Date</th>
+                          <th className="p-4 text-left">Vendor Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.filter(order => order.vender_status === 'Out for Pickup').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                          <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                            <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                            <td className="p-4">{order.order_item_id}</td>
+                            <td className="p-4">{order.user_id}</td>
+                            <td className="p-4">{order.user_name}</td>
+                            <td className="p-4">{order.user_phone}</td>
+                            <td className="p-4">{order.menu_name}</td>
+                            <td className="p-4">{order.quantity}</td>
+                            <td className="p-4">{order.total_price} Rs</td>
+                            <td className="p-4">{order.delivery_address}</td>
+                            <td className="p-4">{order.payment_status}</td>
+                            <td className="p-4">{formatDateTime(order.order_date)}</td>
+                            <td className="p-4">{order.vender_status || 'Pending'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Rejected Orders */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">Rejected Orders</h2>
-            {orders.filter(order => order.vender_status === 'Rejected').length === 0 ? (
-              <p className="text-gray-500">No orders in this status</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                  <thead>
-                    <tr className="bg-gray-200 text-gray-600 text-sm">
-                      <th className="p-4 text-left">Image</th>
-                      <th className="p-4 text-left">Order Item ID</th>
-                      <th className="p-4 text-left">User ID</th>
-                      <th className="p-4 text-left">User Name</th>
-                      <th className="p-4 text-left">Phone</th>
-                      <th className="p-4 text-left">Menu Name</th>
-                      <th className="p-4 text-left">Quantity</th>
-                      <th className="p-4 text-left">Total Price</th>
-                      <th className="p-4 text-left">Delivery Address</th>
-                      <th className="p-4 text-left">Payment Status</th>
-                      <th className="p-4 text-left">Order Date</th>
-                      <th className="p-4 text-left">Vendor Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.filter(order => order.vender_status === 'Rejected').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
-                      <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b bg-red-100">
-                        <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
-                        <td className="p-4">{order.order_item_id}</td>
-                        <td className="p-4">{order.user_id}</td>
-                        <td className="p-4">{order.user_name}</td>
-                        <td className="p-4">{order.user_phone}</td>
-                        <td className="p-4">{order.menu_name}</td>
-                        <td className="p-4">{order.quantity}</td>
-                        <td className="p-4">{order.total_price} Rs</td>
-                        <td className="p-4">{order.delivery_address}</td>
-                        <td className="p-4">{order.payment_status}</td>
-                        <td className="p-4">{formatDateTime(order.order_date)}</td>
-                        <td className="p-4">{order.vender_status || 'Pending'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Completed Orders */}
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">Completed Orders</h2>
+                {orders.filter(order => order.vender_status === 'Completed').length === 0 ? (
+                  <p className="text-gray-500">No orders in this status</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 text-sm">
+                          <th className="p-4 text-left">Image</th>
+                          <th className="p-4 text-left">Order Item ID</th>
+                          <th className="p-4 text-left">User ID</th>
+                          <th className="p-4 text-left">User Name</th>
+                          <th className="p-4 text-left">Phone</th>
+                          <th className="p-4 text-left">Menu Name</th>
+                          <th className="p-4 text-left">Quantity</th>
+                          <th className="p-4 text-left">Total Price</th>
+                          <th className="p-4 text-left">Delivery Address</th>
+                          <th className="p-4 text-left">Payment Status</th>
+                          <th className="p-4 text-left">Order Date</th>
+                          <th className="p-4 text-left">Vendor Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.filter(order => order.vender_status === 'Completed').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                          <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b hover:bg-gray-100 transition-colors">
+                            <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                            <td className="p-4">{order.order_item_id}</td>
+                            <td className="p-4">{order.user_id}</td>
+                            <td className="p-4">{order.user_name}</td>
+                            <td className="p-4">{order.user_phone}</td>
+                            <td className="p-4">{order.menu_name}</td>
+                            <td className="p-4">{order.quantity}</td>
+                            <td className="p-4">{order.total_price} Rs</td>
+                            <td className="p-4">{order.delivery_address}</td>
+                            <td className="p-4">{order.payment_status}</td>
+                            <td className="p-4">{formatDateTime(order.order_date)}</td>
+                            <td className="p-4">{order.vender_status || 'Pending'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
+              {/* Rejected Orders */}
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">Rejected Orders</h2>
+                {orders.filter(order => order.vender_status === 'Rejected').length === 0 ? (
+                  <p className="text-gray-500">No orders in this status</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200 text-gray-600 text-sm">
+                          <th className="p-4 text-left">Image</th>
+                          <th className="p-4 text-left">Order Item ID</th>
+                          <th className="p-4 text-left">User ID</th>
+                          <th className="p-4 text-left">User Name</th>
+                          <th className="p-4 text-left">Phone</th>
+                          <th className="p-4 text-left">Menu Name</th>
+                          <th className="p-4 text-left">Quantity</th>
+                          <th className="p-4 text-left">Total Price</th>
+                          <th className="p-4 text-left">Delivery Address</th>
+                          <th className="p-4 text-left">Payment Status</th>
+                          <th className="p-4 text-left">Order Date</th>
+                          <th className="p-4 text-left">Vendor Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.filter(order => order.vender_status === 'Rejected').sort((a, b) => new Date(b.order_date) - new Date(a.order_date)).map((order, index) => (
+                          <tr key={`${order.order_item_id}-${index}`} className="text-sm text-gray-600 border-b bg-red-100">
+                            <td className="p-4"><img src={order.image_url} alt={order.menu_name} className="w-16 h-16 object-cover rounded-md" /></td>
+                            <td className="p-4">{order.order_item_id}</td>
+                            <td className="p-4">{order.user_id}</td>
+                            <td className="p-4">{order.user_name}</td>
+                            <td className="p-4">{order.user_phone}</td>
+                            <td className="p-4">{order.menu_name}</td>
+                            <td className="p-4">{order.quantity}</td>
+                            <td className="p-4">{order.total_price} Rs</td>
+                            <td className="p-4">{order.delivery_address}</td>
+                            <td className="p-4">{order.payment_status}</td>
+                            <td className="p-4">{formatDateTime(order.order_date)}</td>
+                            <td className="p-4">{order.vender_status || 'Pending'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </section>
         {/* Menu Section */}
 

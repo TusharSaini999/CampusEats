@@ -5,8 +5,8 @@ const router = express.Router();
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
 const multer = require("multer");
-const path = require("path");
-
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('./cloudinaryConfig');
 //signup for customers
 //http://localhost:4000/users/signup-customer
 router.post("/signup-customer", async (req, res) => {
@@ -131,62 +131,62 @@ router.get("/customer-profile/:id", async (req, res) => {
 });
 
 //profile update
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "./profile/")); // Save images in the `./profile/` folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'user_profiles', // Cloudinary folder for storing images
+    format: async (req, file) => 'png', // Automatically convert images to PNG
   },
 });
 
 const upload = multer({ storage });
 
-router.put("/profile-update", upload.single("image"), async (req, res) => {
+router.put('/profile-update', upload.single('image'), async (req, res) => {
   const { id, name, phone, address, currentPassword, userType } = req.body;
 
   if (!id || !userType) {
-    return res.status(400).json({ message: "User ID and user type are required" });
+    return res.status(400).json({ message: 'User ID and user type are required' });
   }
 
-  let profileImage = req.file ? `profile/${req.file.filename}` : null;
+  // Use Cloudinary image URL if file is uploaded
+  let profileImage = req.file ? req.file.path : null;
 
   try {
-    let query = "";
+    let query = '';
     let params = [];
 
-    if (userType === "user") {
+    if (userType === 'user') {
       query = `
         UPDATE users 
         SET name = ?, phone = ?, address = ?, image = COALESCE(?, image)
         WHERE id = ?`;
       params = [name, phone, address, profileImage, id];
-    } else if (userType === "vendor") {
+    } else if (userType === 'vendor') {
       query = `
         UPDATE vendors 
         SET name = ?, phone = ?, address = ?, image = COALESCE(?, image)
         WHERE id = ?`;
       params = [name, phone, address, profileImage, id];
-    } else if (userType === "delivery_boy") {
+    } else if (userType === 'delivery_boy') {
       query = `
         UPDATE delivery 
         SET name = ?, moble_no = ?, address = ?, image = COALESCE(?, image)
         WHERE id = ?`;
       params = [name, phone, address, profileImage, id];
     } else {
-      return res.status(400).json({ message: "Invalid user type" });
+      return res.status(400).json({ message: 'Invalid user type' });
     }
 
     const [response] = await db.promise().query(query, params);
 
     if (response.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    res.status(200).json({ message: "Profile updated successfully" });
+    res.status(200).json({ message: 'Profile updated successfully', imageUrl: profileImage });
   } catch (e) {
-    console.error("Error updating profile:", e.message);
-    res.status(500).json({ message: "Failed to update profile" });
+    console.error('Error updating profile:', e.message);
+    res.status(500).json({ message: 'Failed to update profile' });
   }
 });
 

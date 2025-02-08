@@ -106,7 +106,7 @@ const DeliveryTrackingPage = () => {
       </div>
 
       {/* Map Container */}
-      <div className="flex-grow mt-4 md:mt-6 px-2 md:px-10">
+      <div className="flex-grow mt-4 md:mt-6 px-2 z-0 md:px-10">
         <div className="w-full h-[80vh] rounded overflow-hidden shadow-md">
           <MapContainer
             center={[28.6139, 77.2090]} // Default center

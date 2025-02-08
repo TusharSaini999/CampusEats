@@ -1,7 +1,53 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
-
+import { motion } from "framer-motion";
+const Modal = ({ message, onClose }) => {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center"
+      onClick={onClose}
+    >
+      <motion.div
+        className="bg-white p-6 rounded-2xl shadow-xl w-11/12 max-w-md relative"
+        onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside the modal
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 200 }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-600 hover:text-red-500"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          Notification
+        </h2>
+        <p className="text-gray-600">{message}</p>
+        <button
+          onClick={onClose}
+          className="mt-6 bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg w-full"
+        >
+          Close
+        </button>
+      </motion.div>
+    </div>
+  );
+};
 const Overmenu = () => {
   const [showAddDishModal, setShowAddDishModal] = useState(false);
   const [name, setName] = useState("");
@@ -14,8 +60,12 @@ const Overmenu = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [userId, setUserId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [adloading, adsetLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const toggleAddDishModal = () => {
     setShowAddDishModal(!showAddDishModal);
   };
@@ -26,6 +76,7 @@ const Overmenu = () => {
   const fetchOurMenu = async () => {
     if (!userId) return;
     try {
+      setLoading(true);
       const response = await axios.get(
         `https://campuseats-ki1c.onrender.com/menu/vend`,
         {
@@ -34,23 +85,20 @@ const Overmenu = () => {
       );
       const menuWithImages = response.data.map((item) => ({
         ...item,
-        image_url: item.image_url 
-          ? `${process.env.REACT_APP_BACKEND_URL}${item.image_url}`
-          : `https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg`,
+        image_url: item.image_url
+          ? `${item.image_url}`
+          : `https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg`,
       }));
       setMenu(menuWithImages);
+      setLoading(false);
+      setInitialLoading(false);
     } catch (error) {
       console.error("Error fetching menu:", error);
     }
   };
   useEffect(() => {
     fetchOurMenu();
-    const interval = setInterval(() => {
-      fetchOurMenu();
-    }, 3000); // 5000ms = 5 seconds
-
-    return () => clearInterval(interval);
-  }, [userId]);
+  }, [userId, menu]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !description || !price || !category || !image_url) {
@@ -68,14 +116,18 @@ const Overmenu = () => {
     formData.append('availability', availability);
     formData.append('image_url', image_url);
     try {
+      setIsSubmitting(false);
+      adsetLoading(true);
+      toggleAddDishModal();
       const response = await fetch("https://campuseats-ki1c.onrender.com/menu/post-menu", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        alert("Dish Added successfully");
-        toggleAddDishModal();
+        setShowModal(true);
+        handleShowModal("Dish Added successfully!");
+        adsetLoading(false);
         setName("");
         setDescription("");
         setPrice("");
@@ -88,8 +140,6 @@ const Overmenu = () => {
       }
     } catch (error) {
       console.error("Network error:", error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -97,7 +147,10 @@ const Overmenu = () => {
     setEditItem(item);
     setIsEditing(true);
   };
-
+  const handleShowModal = (message) => {
+    setModalMessage(message);
+    setShowModal(true);
+  };
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
@@ -109,7 +162,8 @@ const Overmenu = () => {
         category: editItem.category,
         availability: editItem.availability,
       });
-      alert("Menu item updated successfully!");
+      setShowModal(true);
+      handleShowModal("Menu item updated successfully!");
       setIsEditing(false);
       setName("");
       setDescription("");
@@ -120,20 +174,167 @@ const Overmenu = () => {
     } catch (error) {
       console.log(editItem);
       console.error("Error updating menu item:", error);
-      alert("Failed to update menu item.");
+      setShowModal(true);
+      handleShowModal("Failed to update menu item!");
     }
   };
 
   const handleDelete = async (itemId) => {
     try {
       await axios.delete(`https://campuseats-ki1c.onrender.com/menu/delete-menu/${itemId}`);
+      setShowModal(true);
+      handleShowModal("Menu item Deleted successfully!");
       fetchOurMenu();
     } catch (error) {
       console.error("Error deleting item:", error);
+      setShowModal(true);
+      handleShowModal("Error deleting item!");
     }
   };
+  if (adloading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-4 mt-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+          <div className="w-32 h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+        </div>
+
+        <div className="p-4 overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-200 mt-4">
+            <thead>
+              <tr className="bg-gray-100 text-left text-gray-700 text-sm">
+                <th className="p-3 border border-gray-300">
+                  <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-40 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-20 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Generate Skeleton Rows */}
+              {[...Array(5)].map((_, index) => (
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-16 h-16 bg-gray-200 animate-pulse rounded-lg"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-40 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-20 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+  if (loading && initialLoading) {
+    return (
+      <div className="bg-white shadow rounded-lg p-4 mt-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+          <div className="w-32 h-8 bg-gray-200 animate-pulse rounded-lg"></div>
+        </div>
+
+        <div className="p-4 overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-200 mt-4">
+            <thead>
+              <tr className="bg-gray-100 text-left text-gray-700 text-sm">
+                <th className="p-3 border border-gray-300">
+                  <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-40 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-20 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+                <th className="p-3 border border-gray-300">
+                  <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Generate Skeleton Rows */}
+              {[...Array(5)].map((_, index) => (
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-16 h-16 bg-gray-200 animate-pulse rounded-lg"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-40 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-20 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                  <td className="p-3 border border-gray-300">
+                    <div className="w-32 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white shadow rounded-lg p-4 mt-6 max-w-7xl mx-auto">
+      {showModal && (
+        <Modal
+          message={modalMessage}
+          onClose={() => setShowModal(false)}
+        />
+      )}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <h2 className="text-xl font-bold">Our Menu</h2>
         <button
@@ -268,19 +469,26 @@ const Overmenu = () => {
                   )}
                 </td>
                 <td className="p-3 border border-gray-300">
-                  <button
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 mr-2"
-                    onClick={() => handleEditClick(item)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
-                    onClick={() => handleDelete(item.id)}
-                  >
-                    Delete
-                  </button>
+                  {item.delete === 1 ? (
+                    <span className="text-red-500 italic">Item deleted</span>
+                  ) : (
+                    <>
+                      <button
+                        className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 mr-2"
+                        onClick={() => handleEditClick(item)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </td>
+
               </tr>
             ))}
           </tbody>

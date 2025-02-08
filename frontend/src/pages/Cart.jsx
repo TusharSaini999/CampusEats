@@ -135,8 +135,8 @@ const Cart = () => {
                   <img
                     src={
                       item.image_url
-                        ? `${process.env.REACT_APP_BACKEND_URL}${item.image_url}`
-                        : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                        ? `${item.image_url}`
+                        : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
                     }
                     alt={item.name}
                     className="w-20 h-20 object-cover"

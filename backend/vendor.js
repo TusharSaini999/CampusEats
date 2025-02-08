@@ -302,7 +302,6 @@ router.get('/order-status', (req, res) => {
     return res.status(400).json({ error: 'Order ID and Vendor ID are required.' });
   }
 
-
   db.query(
     'SELECT status FROM order_vender WHERE order_id = ? AND v_id = ?',
     [order_id, vendor_id],
@@ -313,7 +312,11 @@ router.get('/order-status', (req, res) => {
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ error: 'Order not assigned to this vendor.' });
+        // Return custom error message with code 1001
+        return res.status(400).json({
+          errorCode: 1001,
+          message: 'First accept the order'
+        });
       }
 
       // Extract the status from the results
@@ -322,6 +325,7 @@ router.get('/order-status', (req, res) => {
     }
   );
 });
+
 
 //seacrch on order using order id
 //curl -X GET "http://localhost:4000/vendors/search-orders/21?orderId=34" -H "Content-Type: application/json"

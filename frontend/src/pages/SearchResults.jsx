@@ -121,7 +121,29 @@ const SearchResults = () => {
         </h1>
 
         {loading && (
-          <p className="text-center text-lg text-gray-600">Loading...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition duration-200 overflow-hidden"
+            >
+              {/* Skeleton for Image */}
+              <div className="w-full h-48 bg-gray-300 animate-pulse" />
+    
+              {/* Skeleton for Content */}
+              <div className="p-4">
+                {/* Title Skeleton */}
+                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2 animate-pulse" />
+                {/* Category Skeleton */}
+                <div className="h-3 bg-gray-200 rounded w-1/2 mb-2 animate-pulse" />
+                {/* Price Skeleton */}
+                <div className="h-4 bg-gray-300 rounded w-1/4 mb-3 animate-pulse" />
+                {/* Button Skeleton */}
+                <div className="h-8 bg-gray-400 rounded-md w-full animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
         )}
         {error && (
           <p className="text-center text-lg text-red-600">{error}</p>
@@ -143,8 +165,8 @@ const SearchResults = () => {
                 <img
                   src={
                     result.image_url
-                      ? `${process.env.REACT_APP_BACKEND_URL}${result.image_url}`
-                      : "https://thumbs.dreamstime.com/b/isometric-online-pizza-order-mobile-app-templates-free-delivery-female-courier-fast-food-delivery-online-service-isometric-online-168746284.jpg"
+                      ? `${result.image_url}`
+                      : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
                   }
                   alt={result.name}
                   className="w-full h-48 object-cover"

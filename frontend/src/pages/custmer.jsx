@@ -135,7 +135,7 @@ const DeliveryTrackingPage = () => {
         </form>
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </div>
-      <div className="flex-grow mt-10 px-4">
+      <div className="flex-grow z-0 mt-10 px-4">
         <div className="w-full h-[70vh] rounded-md overflow-hidden shadow-md">
           <MapContainer
             center={[28.6139, 77.2090]} // Default center
