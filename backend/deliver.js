@@ -678,7 +678,7 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
     LEFT JOIN 
         order_vender ov ON o.id = ov.order_id AND v.id = ov.v_id
     LEFT JOIN 
-        delivery d ON o.delivery_boy_id = d.id  -- Join with the delivery table if delivery_boy is not null
+        delivery d ON o.delivery_boy_id = d.id
     WHERE 
         o.id = ?
     GROUP BY 
@@ -697,8 +697,6 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    const order = result[0]; // This will return the first row of the query result
-
     // Collect vendor data and items separately
     const vendors = result.map((row) => ({
       vendor_id: row.vendor_id,
@@ -709,13 +707,12 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
       otp: row.vendor_otp,
     }));
 
-    // Format items as an array of objects
-    const items = order.items
-      ? order.items.split('; ').map(item => {
+    // Format items from all vendors and all rows
+    const items = result.flatMap(row => {
+      if (row.items) {
+        return row.items.split('; ').map(item => {
           const [itemName, itemDetails] = item.split(' x');
-          const [quantity, priceAndVendor] = itemDetails
-            ? itemDetails.split(' @')
-            : ['0', '0 INR (Vendor: Unknown)'];
+          const [quantity, priceAndVendor] = itemDetails ? itemDetails.split(' @') : ['0', '0 INR (Vendor: Unknown)'];
           const [price, vendor] = priceAndVendor.split(' INR (Vendor: ');
           return {
             name: itemName?.trim() || 'Unknown',
@@ -723,29 +720,31 @@ router.get('/orders_boy_deliver/:orderId', (req, res) => {
             price: parseInt(price?.trim()) || 0,
             vendor: vendor?.replace(')', '')?.trim() || 'Unknown',
           };
-        })
-      : [];
+        });
+      }
+      return [];
+    });
 
     // Prepare final formatted response
     const formattedOrder = {
-      order_id: order.order_id,
-      user_name: order.user_name,
-      user_email: order.user_email,
-      user_phone: order.user_phone,
+      order_id: result[0].order_id,
+      user_name: result[0].user_name,
+      user_email: result[0].user_email,
+      user_phone: result[0].user_phone,
       vendors: vendors, // This will include one row per vendor
-      items: items,
-      total_price: order.total_price,
-      payment_status: order.payment_status,
-      dstatus: order.status,
-      delivery_address: order.delivery_address,
-      created_at: order.created_at,
-      uotp: order.delivery_otp,
-      delivery_boy: order.delivery_boy_id
+      items: items, // All items from all vendors
+      total_price: result[0].total_price,
+      payment_status: result[0].payment_status,
+      dstatus: result[0].status,
+      delivery_address: result[0].delivery_address,
+      created_at: result[0].created_at,
+      uotp: result[0].delivery_otp,
+      delivery_boy: result[0].delivery_boy_id
         ? {
-            id: order.delivery_boy_id,
-            name: order.delivery_boy_name,
-            email: order.delivery_boy_email,
-            phone: order.delivery_boy_phone,
+            id: result[0].delivery_boy_id,
+            name: result[0].delivery_boy_name,
+            email: result[0].delivery_boy_email,
+            phone: result[0].delivery_boy_phone,
           }
         : null, // If no delivery boy is assigned
     };
