@@ -507,4 +507,35 @@ router.post('/verify-otp', (req, res) => {
     });
   });
 });
+
+//check otp
+router.post('/check-otp-status', (req, res) => {
+  const { order_id, v_id } = req.body;
+
+  // Validate input
+  if (!order_id || !v_id) {
+    return res.status(400).json({ message: 'order_id and v_id are required' });
+  }
+
+  const query = 'SELECT otp FROM order_vender WHERE order_id = ? AND v_id = ?';
+  
+  db.query(query, [order_id, v_id], (err, result) => {
+    if (err) {
+      console.error('Error fetching OTP status:', err);
+      return res.status(500).json({ message: 'Failed to check OTP status' });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'Order ID and Vendor ID not found' });
+    }
+
+    // Check if OTP exists
+    const otpExists = result[0].otp !== null && result[0].otp !== '';
+    res.json({
+      otpExists: otpExists,
+      message: otpExists ? 'OTP already generated' : 'No OTP generated',
+    });
+  });
+});
+
 module.exports = router;

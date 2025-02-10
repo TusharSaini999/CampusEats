@@ -128,6 +128,37 @@ const RestaurantDashboard = () => {
         setErrorMessage("Failed to generate OTP. Please try again.");
       });
   };
+  const fetchOtpStatus = async () => {
+    try {
+      // Make a request to the API to check the OTP status
+      const response = await fetch(`http://localhost:4000/vendors/check-otp-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order_id: selectedOrder,
+          v_id: userId, // Replace with actual vendor ID
+        }),
+      });
+  
+      // Check if the response is successful
+      if (!response.ok) {
+        throw new Error('Failed to fetch OTP status');
+      }
+  
+      // Parse the response body
+      const data = await response.json();
+  
+      // Return whether OTP exists for this order
+      return data.otp_exists || false;
+      console.log(data);
+    } catch (error) {
+      console.error('Error fetching OTP status:', error);
+      return false;
+    }
+  };
+  
   const handleCompleteOrder = () => {
     console.log('Selected Order:', selectedOrder);
     console.log('User ID:', userId);
@@ -684,7 +715,8 @@ const RestaurantDashboard = () => {
                     setOrderStatus(null); // Reset status when a new order is selected
                     setIsOtpGenerated(false); // Reset OTP state
                     setOrderOtp(""); // Clear any previously entered OTP
-                    setErrorMessage(""); // Clear previous error messages
+                    setErrorMessage("");
+                    fetchOtpStatus(); // Clear previous error messages
                   }}
                   value={selectedOrder}
                 >
