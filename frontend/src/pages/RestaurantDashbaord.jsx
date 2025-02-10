@@ -220,9 +220,11 @@ const RestaurantDashboard = () => {
         .get(`https://campuseats-ki1c.onrender.com/vendors/order-status?order_id=${selectedOrderId}&vendor_id=${userId}`)
         .then((response) => {
           setStatus(response.data.status);
+          console.log(response.data.status);
         })
         .catch((error) => {
           console.error("Error fetching order status:", error);
+          setStatus("pending")
         });
     }
   }, [modalOpen, selectedOrderId, userId]);
@@ -573,7 +575,7 @@ const RestaurantDashboard = () => {
 
 
                 {/* Accept Button - Disabled if no order is selected */}
-                {selectedOrderId && status === null && (
+                {selectedOrderId && status && status === "pending" && (
                   <button
                     className="w-3/4 px-4 py-2 text-sm rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-300"
                     onClick={() => {
@@ -585,7 +587,7 @@ const RestaurantDashboard = () => {
                   </button>
                 )}
                 {/* Prepared Button */}
-                {status === "Accepted" && (
+                {status && status === "Accepted" && (
                   <button
                     className="w-3/4 px-4 py-2 text-sm rounded-md bg-gray-500 text-white hover:bg-gray-600 transition-colors duration-300"
                     onClick={() => {
@@ -597,7 +599,7 @@ const RestaurantDashboard = () => {
                   </button>
                 )}
                 {/* Ready for Pickup Button */}
-                {status === "Prepared" && (
+                {status && status === "Prepared" && (
                   <button
                     className="w-3/4 px-4 py-2 text-sm rounded-md bg-green-500 text-white hover:bg-green-600 transition-colors duration-300"
                     onClick={() => {
@@ -610,7 +612,7 @@ const RestaurantDashboard = () => {
                 )}
 
                 {/* Reject Button - Hidden if Out for Pickup or no order is selected */}
-                {selectedOrderId && status !== "Out for Pickup" && status !== "Completed" && status !== "Rejected" && (
+                {status && selectedOrderId && status !== "Out for Pickup" && status !== "Completed" && status !== "Rejected" && (
                   <button
                     className="w-3/4 px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors duration-300"
                     onClick={handleReject}
