@@ -131,7 +131,7 @@ const RestaurantDashboard = () => {
   const fetchOtpStatus = async () => {
     try {
       // Make a request to the API to check the OTP status
-      const response = await fetch(`http://localhost:4000/vendors/check-otp-status`, {
+      const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/check-otp-status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

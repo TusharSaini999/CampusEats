@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
+import { ThreeDot } from "react-loading-indicators";
 
 const LoginSignup = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -11,6 +12,7 @@ const LoginSignup = () => {
     password: "",
     userType: "user",
   });
+  const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [modalMessage, setModalMessage] = useState("");
@@ -35,11 +37,13 @@ const LoginSignup = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setLoading(true); // Start loading
 
     // Form validation
     if (isSignup) {
       if (!formData.name || !formData.email || !formData.password || !formData.mobile_no) {
         setError("All fields are required.");
+        setLoading(false);
         return;
       }
 
@@ -47,11 +51,13 @@ const LoginSignup = () => {
       if (formData.mobile_no.length !== 10) {
         setModalMessage("Mobile number must be exactly 10 digits.");
         openModal();
+        setLoading(false);
         return;
       }
     } else {
       if (!formData.email || !formData.password) {
         setError("All fields are required.");
+        setLoading(false);
         return;
       }
     }
@@ -70,7 +76,6 @@ const LoginSignup = () => {
         setSuccess(response.data.message || "Registration successful!");
         setModalMessage("Registration successful! Please log in to continue.");
         openModal();
-
 
         navigate("/login");
       } else {
@@ -94,16 +99,18 @@ const LoginSignup = () => {
         } else if (userType == "delivery_boy") {
           navigate("/delivery-boy-dashboard");
           window.location.reload();
-        }
-        else {
-          navigate("/")
+        } else {
+          navigate("/");
           window.location.reload();
         }
       }
     } catch (error) {
       setError(error.response?.data?.message || "An error occurred");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
+
 
   const getEndpoint = (userType) => {
     switch (userType) {
@@ -129,6 +136,16 @@ const LoginSignup = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 bg-check-pattern">
       <div className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col md:flex-row transform transition duration-300 hover:scale-105">
+        {isLoading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <ThreeDot
+              color="#7445f0"
+              height={50}
+              width={50}
+              visible={true}
+            />
+          </div>
+        )}
 
         {/* Left Panel */}
         <div className="w-full md:w-1/2 bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-8 flex flex-col items-center justify-center">
