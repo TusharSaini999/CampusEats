@@ -45,10 +45,6 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 
 - **Leaflet.js**: For real-time interactive maps to track food delivery.
 
-### Notifications 🔔
-
-- **Real-Time Updates**: Ensure timely notifications for users and delivery personnel.
-
 ### AI Integration 🤖
 
 - AI-powered chatbot for support and smart food recommendations.
