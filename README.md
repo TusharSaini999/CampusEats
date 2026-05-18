@@ -46,7 +46,6 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 - **Leaflet.js**: For real-time interactive maps to track food delivery.
 
 ### AI Integration 🤖
-
 - AI-powered chatbot for support and smart food recommendations.
 
 ---
@@ -60,9 +59,7 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 ---
 
 ## Contributing 📢
-
 We welcome contributions to Campus Eats! To contribute:
-
 1. Fork the repository.
 2. Create a new branch for your feature/bug fix.
 3. Commit your changes and push to your branch.
