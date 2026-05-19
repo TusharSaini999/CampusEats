@@ -72,7 +72,5 @@ We welcome contributions to Campus Eats! To contribute:
 This project is licensed under the **GPL-3.0 License**. Feel free to use, modify, and distribute it under the terms of the GPL-3.0.
 
 **Disclaimer**: This software is provided "as is" without warranty of any kind. The developers are not responsible for any misuse or unintended consequences arising from the use of this platform.
-
 ---
-
 Happy Ordering! 🍔🍜🍳
