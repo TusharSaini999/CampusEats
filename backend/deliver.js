@@ -96,7 +96,7 @@ router.put("/update-delivery-boy", async (req, res) => {
     }
 
 
-    let hashedPassword = deliveryBoy[0].password; // Use the existing password if no new password is provided
+    let hashedPassword = deliveryBoy[0].password; 
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
