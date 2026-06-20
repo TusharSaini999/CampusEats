@@ -7,20 +7,17 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 ## Key Features 🔧
 
 ### For Students 👨‍🎓
-
 - **Order Food Anytime**: Browse and order from your favorite campus restaurants and shops.
 - **Real-Time Tracking**: Track your food delivery in real time with an interactive map powered by **Leaflet.js**.
 - **AI Chatbot**: Get assistance with our AI-powered chatbot for queries and recommendations.
 - **Personalized Recommendations**: Enjoy AI-driven food recommendations based on your preferences.
 
 ### For Admins 💻
-
 - **User Management**: Manage users, delivery personnel, and vendors efficiently.
 - **Order Insights**: Monitor real-time orders and track platform performance.
 - **Notifications**: Send important notifications to users and delivery staff.
 
 ### For Delivery Personnel 🚓
-
 - **Order Notifications**: Receive instant notifications for new delivery assignments.
 - **Delivery Path Assistance**: Get optimized delivery paths to ensure fast and efficient service.
 
