@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import Groq from "groq-sdk";
 import { motion, AnimatePresence } from "framer-motion";
-import "tailwindcss/tailwind.css";
 import ReactMarkdown from 'react-markdown';
 
 const groq = new Groq({
-  apiKey: process.env.REACT_APP_GROQ_API_KEY,
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 

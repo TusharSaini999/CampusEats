@@ -8,6 +8,9 @@ yarn-error.log*
 # backend and frontend node modules
 /backend/node_modules/
 /frontend/node_modules/
+/frontend/.npm-cache/
+/frontend/build/
+/frontend/dist/
 
 # Databases dumps
 /Databases/

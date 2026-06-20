@@ -1,13 +1,18 @@
 {
   "name": "campuseats",
-  "version": "0.1.0",
   "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "CampusEats frontend built with React, Vite, and Tailwind CSS.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "animate.css": "^4.1.1",
     "axios": "^1.7.9",
-    "cra-template": "1.2.0",
-    "dotenv": "^16.4.7",
     "framer-motion": "^11.15.0",
     "groq-sdk": "^0.9.1",
     "jwt-decode": "^4.0.0",
@@ -21,42 +26,13 @@
     "react-markdown": "^9.0.3",
     "react-modal": "^3.16.3",
     "react-router-dom": "^7.0.2",
-    "react-scripts": "^5.0.1",
-    "react-transition-group": "^4.4.5",
-    "web-vitals": "^4.2.4"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "react-transition-group": "^4.4.5"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.16"
-  },
-  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
-  "main": "tailwind.config.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "tailwindcss": "^3.4.16",
+    "vite": "^6.0.7"
+  }
 }
