@@ -27,14 +27,14 @@ const Menu = () => {
   const fetchMenuItems = async () => {
     try {
       setisLoading(true);
-      const response = await fetch("https://campuseats-ki1c.onrender.com/menu/");
+      const response = await fetch(import.meta.env.VITE_API_URL + "/menu/");
       const data = await response.json();
       // Assign default image to items with empty image URLs
       const menuWithImages = data.map((item) => ({
         ...item,
         image_url: item.image_url
           ? `${item.image_url}` // Prepend base URL if the image exists
-          : `https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg`, // Fallback image
+          : `https://res.cloudinary.com/cloud451752/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg`, // Fallback image
       }));
       setMenuItems(menuWithImages);
       setisLoading(false);
@@ -84,7 +84,7 @@ const Menu = () => {
     const cartItem = { order_id, menu_id, quantity, price, user_id };
 
     try {
-      const response = await fetch("https://campuseats-ki1c.onrender.com/order_items/add-to-cart", {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/order_items/add-to-cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cartItem),

@@ -37,7 +37,7 @@ const PaymentConfirmation = () => {
       if (!userId) return;
 
       try {
-        const response = await axios.post("https://campuseats-ki1c.onrender.com/orders/total-price", {
+        const response = await axios.post(import.meta.env.VITE_API_URL + "/orders/total-price", {
           user_id: userId,
         });
 
@@ -60,7 +60,7 @@ const PaymentConfirmation = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("https://campuseats-ki1c.onrender.com/orders/create-order", {
+      const response = await axios.post(import.meta.env.VITE_API_URL + "/orders/create-order", {
         user_id: userId,
         total_price: totalPrice,
         delivery_address: deliveryAddress,

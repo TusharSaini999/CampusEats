@@ -43,7 +43,7 @@ const SearchResults = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `https://campuseats-ki1c.onrender.com/menu/search-menu/${searchQuery}`
+          `${import.meta.env.VITE_API_URL}/menu/search-menu/${searchQuery}`
         );
         setResults(response.data);
       } catch (err) {
@@ -78,7 +78,7 @@ const SearchResults = () => {
 
     try {
       const response = await fetch(
-        "https://campuseats-ki1c.onrender.com/order_items/add-to-cart",
+        import.meta.env.VITE_API_URL + "/order_items/add-to-cart",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -166,7 +166,7 @@ const SearchResults = () => {
                   src={
                     result.image_url
                       ? `${result.image_url}`
-                      : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
+                      : "https://res.cloudinary.com/cloud451752/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
                   }
                   alt={result.name}
                   className="w-full h-48 object-cover"

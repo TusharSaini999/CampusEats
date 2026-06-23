@@ -26,7 +26,7 @@ const Cart = () => {
         const user_id = userId;
 
         const response = await fetch(
-          `https://campuseats-ki1c.onrender.com/order_items?user_id=${user_id}`
+          `${import.meta.env.VITE_API_URL}/order_items?user_id=${user_id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch cart items");
@@ -51,7 +51,7 @@ const Cart = () => {
   const handleQuantityChange = async (id, newQuantity) => {
     try {
       const response = await fetch(
-        `https://campuseats-ki1c.onrender.com/order_items/update-quantity/${id}`,
+        `${import.meta.env.VITE_API_URL}/order_items/update-quantity/${id}`,
         {
           method: "PUT",
           headers: {
@@ -94,7 +94,7 @@ const Cart = () => {
 
   const handleRemoveItem = async (id) => {
     try {
-      await fetch(`https://campuseats-ki1c.onrender.com/order_items/remove-item/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/order_items/remove-item/${id}`, {
         method: "DELETE",
       });
 
@@ -136,7 +136,7 @@ const Cart = () => {
                     src={
                       item.image_url
                         ? `${item.image_url}`
-                        : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
+                        : "https://res.cloudinary.com/cloud451752/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
                     }
                     alt={item.name}
                     className="w-20 h-20 object-cover"

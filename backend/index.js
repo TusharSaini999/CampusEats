@@ -6,7 +6,7 @@ const app = express();
 const path = require("path");
 require('dotenv').config();
 
-const allowedOrigins = ['http://localhost:3000', 'https://campuseats.netlify.app'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -27,8 +27,8 @@ const menuRoute = require("./menu");
 const ordersRoute = require("./order");
 const orderItemsRoute = require("./order_items");
 const categoriesRoute = require("./categories");
-const deliverRoute = require("./deliver"); 
-const getmap = require("./getlocationmap"); 
+const deliverRoute = require("./deliver");
+const getmap = require("./getlocationmap");
 
 // Use routes
 app.use("/images", express.static(path.join(__dirname, "./images")));
@@ -39,7 +39,7 @@ app.use("/menu", menuRoute);
 app.use("/orders", ordersRoute);
 app.use("/order_items", orderItemsRoute);
 app.use("/categories", categoriesRoute);
-app.use("/delivery", deliverRoute); 
+app.use("/delivery", deliverRoute);
 app.use("/map", getmap);
 
 // Start the server

@@ -78,7 +78,7 @@ const Overmenu = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://campuseats-ki1c.onrender.com/menu/vend`,
+        `${import.meta.env.VITE_API_URL}/menu/vend`,
         {
           params: { vendor_id: userId }
         }
@@ -87,7 +87,7 @@ const Overmenu = () => {
         ...item,
         image_url: item.image_url
           ? `${item.image_url}`
-          : `https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg`,
+          : `https://res.cloudinary.com/cloud451752/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg`,
       }));
       setMenu(menuWithImages);
       setLoading(false);
@@ -98,7 +98,7 @@ const Overmenu = () => {
   };
   useEffect(() => {
     fetchOurMenu();
-  }, [userId, menu]);
+  }, [userId]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !description || !price || !category || !image_url) {
@@ -111,36 +111,44 @@ const Overmenu = () => {
     formData.append('vendor_id', userId);
     formData.append('name', name);
     formData.append('description', description);
-    formData.append('price', price);
-    formData.append('category', category);
-    formData.append('availability', availability);
-    formData.append('image_url', image_url);
-    try {
-      setIsSubmitting(false);
-      adsetLoading(true);
-      toggleAddDishModal();
-      const response = await fetch("https://campuseats-ki1c.onrender.com/menu/post-menu", {
-        method: "POST",
-        body: formData,
-      });
+      const cleanPrice = price.replace(/[^\d.]/g, '');
+      formData.append('price', cleanPrice);
+      formData.append('category', category);
+      formData.append('availability', availability);
+      formData.append('image_url', image_url);
+      try {
+        setIsSubmitting(false);
+        adsetLoading(true);
+        toggleAddDishModal();
+        const response = await fetch(import.meta.env.VITE_API_URL + "/menu/post-menu", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (response.ok) {
-        setShowModal(true);
-        handleShowModal("Dish Added successfully!");
+        if (response.ok) {
+          setShowModal(true);
+          handleShowModal("Dish Added successfully!");
+          adsetLoading(false);
+          setName("");
+          setDescription("");
+          setPrice("");
+          setCategory("");
+          setAvailability("");
+          setImageUrl("");
+          await fetchOurMenu();
+        } else {
+          const errorData = await response.json();
+          adsetLoading(false);
+          console.error("Error submitting menu:", errorData);
+          setShowModal(true);
+          handleShowModal("Failed to add dish: " + (errorData.error || response.statusText));
+        }
+      } catch (error) {
         adsetLoading(false);
-        setName("");
-        setDescription("");
-        setPrice("");
-        setCategory("");
-        setAvailability("");
-        setImageUrl("");
-        await fetchOurMenu();
-      } else {
-        console.error("Error submitting menu:", response.statusText);
+        console.error("Network error:", error);
+        setShowModal(true);
+        handleShowModal("Network error: " + error.message);
       }
-    } catch (error) {
-      console.error("Network error:", error);
-    }
   };
 
   const handleEditClick = (item) => {
@@ -155,7 +163,7 @@ const Overmenu = () => {
     e.preventDefault();
 
     try {
-      await axios.put(`https://campuseats-ki1c.onrender.com/menu/update-menu/${editItem.id}`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/menu/update-menu/${editItem.id}`, {
         name: editItem.name,
         description: editItem.description,
         price: editItem.price,
@@ -181,7 +189,7 @@ const Overmenu = () => {
 
   const handleDelete = async (itemId) => {
     try {
-      await axios.delete(`https://campuseats-ki1c.onrender.com/menu/delete-menu/${itemId}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/menu/delete-menu/${itemId}`);
       setShowModal(true);
       handleShowModal("Menu item Deleted successfully!");
       fetchOurMenu();

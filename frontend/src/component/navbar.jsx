@@ -57,7 +57,7 @@ const Navbar = () => {
        const newStatus = 0; // Always set to 0 (offline)
    
        try {
-         const response = await fetch("https://campuseats-ki1c.onrender.com/vendors/update-vendor-status", {
+         const response = await fetch(import.meta.env.VITE_API_URL + "/vendors/update-vendor-status", {
            method: "POST",
            headers: {
              "Content-Type": "application/json",

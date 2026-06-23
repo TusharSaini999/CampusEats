@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: campuseats_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: campuseats_db
+      MYSQL_USER: campus_user
+      MYSQL_PASSWORD: campus_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: campuseats_backend
+    restart: always
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/images:/usr/src/app/images # Map images directory for uploads
+      - ./backend/profile:/usr/src/app/profile # Map profile directory
+
+  frontend:
+    build: ./frontend
+    container_name: campuseats_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

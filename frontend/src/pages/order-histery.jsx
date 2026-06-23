@@ -21,7 +21,7 @@ const OrderHistory = () => {
   const fetchOrderHistory = async (userId) => {
     try {
       setisLoading(true);
-      const response = await axios.post("https://campuseats-ki1c.onrender.com/orders/history", {
+      const response = await axios.post(import.meta.env.VITE_API_URL + "/orders/history", {
         user_id: userId,
       });
 

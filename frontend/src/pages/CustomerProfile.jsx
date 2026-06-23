@@ -22,7 +22,7 @@ function ProfilePage() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://campuseats-ki1c.onrender.com/users/profile",
+          import.meta.env.VITE_API_URL + "/users/profile",
           {
             headers: { Authorization: token },
           }
@@ -69,7 +69,7 @@ function ProfilePage() {
         formDataObj.append("image", selectedImage);
       }
       setLoading(true);
-      await axios.put("https://campuseats-ki1c.onrender.com/users/profile-update", formDataObj, {
+      await axios.put(import.meta.env.VITE_API_URL + "/users/profile-update", formDataObj, {
         headers: { Authorization: token, "Content-Type": "multipart/form-data" },
       });
 
@@ -188,7 +188,7 @@ function ProfilePage() {
       <aside className="w-full md:w-1/4 bg-white shadow-lg flex flex-col items-center py-8 px-4">
         <div className="relative mb-6">
           <img
-            src={formData.imagePreview || `${formData.image || "https://res.cloudinary.com/dsljhnanm/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg"}`}
+            src={formData.imagePreview || `${formData.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg"}`}
             alt={formData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />

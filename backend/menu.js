@@ -53,6 +53,7 @@ router.post('/post-menu', upload, async (req, res) => {
     );
     res.status(201).json({ message: "Dish added successfully!", imageUrl: image_url });
   } catch (e) {
+    console.error("POST menu error:", e);
     res.status(400).json({ error: e.message });
   }
 });
