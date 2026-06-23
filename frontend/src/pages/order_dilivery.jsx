@@ -49,7 +49,7 @@ const OrderDetails = () => {
     setUserType(storedUserType || "");
   });
   useEffect(() => {
-    axios.get(`https://campuseats-ki1c.onrender.com/delivery/orders_boy_deliver/${orderId}`) // Make request with orderId
+    axios.get(`${import.meta.env.VITE_API_URL}/delivery/orders_boy_deliver/${orderId}`) // Make request with orderId
       .then(response => {
         setOrder(response.data);
         setLoading(false);
@@ -63,7 +63,7 @@ const OrderDetails = () => {
   const handleAcceptOrder = async () => {
     setAcceptingOrder(true);
     try {
-      const response = await axios.post('https://campuseats-ki1c.onrender.com/delivery/accept-order', {
+      const response = await axios.post(import.meta.env.VITE_API_URL + '/delivery/accept-order', {
         orderId: order.order_id,
         deliveryBoyId: userId, // Replace with the actual delivery boy ID (use context or props if needed)
       });
@@ -80,7 +80,7 @@ const OrderDetails = () => {
   // Function to update order status to 'Out for Delivery'
   const handleOutForDelivery = async () => {
     try {
-      const response = await axios.post('https://campuseats-ki1c.onrender.com/delivery/out-for-delivery', {
+      const response = await axios.post(import.meta.env.VITE_API_URL + '/delivery/out-for-delivery', {
         orderId: order.order_id,
         deliveryBoyId: userId, // Get the delivery boy ID from local storage
       });
@@ -105,7 +105,7 @@ const OrderDetails = () => {
   const handleGenerateOtp = async () => {
     try {
       // Call the API with the order ID
-      const response = await axios.post("https://campuseats-ki1c.onrender.com/delivery/generate-otp", {
+      const response = await axios.post(import.meta.env.VITE_API_URL + "/delivery/generate-otp", {
         orderId: order.order_id, // Replace with your order ID variable
       });
 
@@ -128,7 +128,7 @@ const OrderDetails = () => {
     setLoading(true);
     console.log(order.order_id, userId, otp);
     try {
-      await axios.post("https://campuseats-ki1c.onrender.com/delivery/verify-delivery", {
+      await axios.post(import.meta.env.VITE_API_URL + "/delivery/verify-delivery", {
         orderId: order.order_id,
         deliveryBoyId: userId, // Pass the delivery boy ID
         otp,
@@ -151,7 +151,7 @@ const OrderDetails = () => {
     }
     setLoading(true);
     try {
-      await axios.post("https://campuseats-ki1c.onrender.com/delivery/reject-order", {
+      await axios.post(import.meta.env.VITE_API_URL + "/delivery/reject-order", {
         orderId: order.order_id,
         deliveryBoyId: userId, // Pass the delivery boy ID
         otp,
@@ -170,7 +170,7 @@ const OrderDetails = () => {
   const handleRejectOrderNoResponse = async () => {
     setLoading(true);
     try {
-      await axios.post("https://campuseats-ki1c.onrender.com/delivery/reject-order-no-response", {
+      await axios.post(import.meta.env.VITE_API_URL + "/delivery/reject-order-no-response", {
         orderId: order.order_id,
         deliveryBoyId: userId, // Pass the delivery boy ID
       });
@@ -187,7 +187,7 @@ const OrderDetails = () => {
   const handleRejectvender = async () => {
     setLoading(true);
     try {
-      await axios.post("https://campuseats-ki1c.onrender.com/delivery/reject-order-vender", {
+      await axios.post(import.meta.env.VITE_API_URL + "/delivery/reject-order-vender", {
         orderId: order.order_id,
         deliveryBoyId: userId, // Pass the delivery boy ID
       });

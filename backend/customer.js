@@ -255,7 +255,7 @@ router.get("/profile", (req, res) => {
           phone: user.phone,
           address: user.address,
           businessName: user.business_name || "N/A",
-          image: user.image || "/profile/main.jpg",
+          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg",
           total_en: user.total_en,
         });
       } else if (userType === "user") {
@@ -266,7 +266,7 @@ router.get("/profile", (req, res) => {
           email: user.email,
           phone: user.phone,
           address: user.address,
-          image: user.image || "/profile/main.jpg",
+          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg",
         });
       } else if (userType === "delivery_boy") {
         res.json({
@@ -275,7 +275,7 @@ router.get("/profile", (req, res) => {
           name: user.name,
           email: user.email,
           phone: user.moble_no, // Using `moble_no` as per your `delivery` table schema
-          image: user.image || "/profile/main.jpg",
+          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg",
           revenue: user.revenue || 0,
           totalDelivery: user.total_delivery || 0,
           createdAt: user.created_at,

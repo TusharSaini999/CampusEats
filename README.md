@@ -50,6 +50,24 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 
 ---
 
+## Testing Accounts
+
+You can use the following accounts to test the application:
+
+### Customer
+- **Email**: User@campuseats.com
+- **Password**: 12345678
+
+### Delivery Boy
+- **Email**: delivery@campuseats.com
+- **Password**: 12345678
+
+### Vendor
+- **Email**: vendor@campuseats.com
+- **Password**: 12345678
+
+---
+
 ## Usage 🍽️
 
 1. **Users**: Sign up, browse food options, place an order, and track delivery.

@@ -31,7 +31,7 @@ const DeliveryboyDashboard = () => {
   useEffect(() => {
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
-  });
+  }, []);
 
   useEffect(() => {
     // Function to fetch delivery details
@@ -39,7 +39,7 @@ const DeliveryboyDashboard = () => {
     const fetchDeliveryDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://campuseats-ki1c.onrender.com/delivery/delivery-details?deliveryBoyId=${userId}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/delivery/delivery-details?deliveryBoyId=${userId}`);
         setDeliveryDetails(response.data.data);
       } catch (error) {
         console.error("Error fetching delivery details:", error);
@@ -52,7 +52,7 @@ const DeliveryboyDashboard = () => {
     if (userId) {
       fetchDeliveryDetails();
     }
-  }, [userId, deliveryDetails]);
+  }, [userId]);
   useEffect(() => {
     localStorage.setItem("openToWork", JSON.stringify(openToWork));
   }, [openToWork]);
@@ -65,7 +65,7 @@ const DeliveryboyDashboard = () => {
       }
 
       try {
-        const response = await axios.get("https://campuseats-ki1c.onrender.com/users/profile", {
+        const response = await axios.get(import.meta.env.VITE_API_URL + "/users/profile", {
           headers: {
             Authorization: token, // Pass token in headers
           },
@@ -84,7 +84,7 @@ const DeliveryboyDashboard = () => {
     try {
       setsearchload(true);
       const response = await fetch(
-        `https://campuseats-ki1c.onrender.com/delivery/search-orders?deliveryBoyId=${userId}&searchQuery=${searchQuery}`
+        `${import.meta.env.VITE_API_URL}/delivery/search-orders?deliveryBoyId=${userId}&searchQuery=${searchQuery}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -104,7 +104,7 @@ const DeliveryboyDashboard = () => {
   const toggleOpenToWork = async (isOpen, token) => {
     try {
       const response = await axios.post(
-        "https://campuseats-ki1c.onrender.com/delivery/open-to-work",
+        import.meta.env.VITE_API_URL + "/delivery/open-to-work",
         { isOpen },
         {
           headers: {
@@ -139,16 +139,17 @@ const DeliveryboyDashboard = () => {
     const fetchPendingOrders = async () => {
       try {
         const response = await axios.get(
-          `https://campuseats-ki1c.onrender.com/delivery/pending-orders`
+          `${import.meta.env.VITE_API_URL}/delivery/pending-orders`
         );
         setOrders(response.data.pendingOrders);
       } catch (err) {
-        setError("Failed to fetch pending orders");
+        console.error("Failed to fetch pending orders:", err);
+        setOrders([]);
       }
     };
 
     fetchPendingOrders();
-  }, [orders]);
+  }, []);
 
   useEffect(() => {
     const fetchDeliverOrders = async () => {
@@ -159,21 +160,21 @@ const DeliveryboyDashboard = () => {
         console.log("Fetching orders for deliveryBoyId:", userId);
         setListload(true);
         const response = await axios.get(
-          `https://campuseats-ki1c.onrender.com/delivery/all-orders?deliveryBoyId=${userId}`
+          `${import.meta.env.VITE_API_URL}/delivery/all-orders?deliveryBoyId=${userId}`
         );
         setAllOrders(response.data.orders);
         setListload(false);
         setlistinit(false);
       } catch (err) {
-        console.error("Error fetching delivery details:", err.response?.data || err.message);
-        setError("Failed to fetch orders");
+        console.error("Error fetching all orders:", err.response?.data || err.message);
+        setAllOrders([]);
         setListload(false);
         setlistinit(false);
       }
     };
 
     fetchDeliverOrders();
-  }, [userId, allorders]);
+  }, [userId]);
 
 
 

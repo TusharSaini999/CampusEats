@@ -163,7 +163,7 @@ router.get("/pending-orders", async (req, res) => {
 
     // Check if no pending orders are found
     if (orders.length === 0) {
-      return res.status(404).json({ message: "No pending orders found" });
+      return res.status(200).json({ pendingOrders: [] });
     }
 
     // Return the fetched orders

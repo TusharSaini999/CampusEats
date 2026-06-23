@@ -43,7 +43,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     const storedUserId = localStorage.getItem("id");
     setUserId(storedUserId || "");
-  });
+  }, []);
 
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [status, setStatus] = useState(null);
@@ -57,7 +57,7 @@ const RestaurantDashboard = () => {
 
     try {
       setsIsLoading(true);
-      const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/search-orders/${userId}?orderId=${orderId}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/vendors/search-orders/${userId}?orderId=${orderId}`);
       const data = await response.json();
 
       console.log('Response Data:', data); // Log the entire response from the server
@@ -88,7 +88,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     if (selectedOrder) {
       axios
-        .get(`https://campuseats-ki1c.onrender.com/vendors/order-status?order_id=${selectedOrder}&vendor_id=${userId}`)
+        .get(`${import.meta.env.VITE_API_URL}/vendors/order-status?order_id=${selectedOrder}&vendor_id=${userId}`)
         .then((response) => {
           setOrderStatus(response.data.status);
           setErrorMessage(""); // Clear error messages
@@ -115,7 +115,7 @@ const RestaurantDashboard = () => {
   const handleGenerateOtp = () => {
     console.log(selectedOrder);
     axios
-      .post("https://campuseats-ki1c.onrender.com/vendors/generate-otp", {
+      .post(import.meta.env.VITE_API_URL + "/vendors/generate-otp", {
         order_id: selectedOrder,
         v_id: userId,
       })
@@ -131,7 +131,7 @@ const RestaurantDashboard = () => {
   const fetchOtpStatus = async () => {
     try {
       // Make a request to the API to check the OTP status
-      const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/check-otp-status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/vendors/check-otp-status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ const RestaurantDashboard = () => {
     console.log('OTP:', orderOtp);
 
     axios
-      .post("https://campuseats-ki1c.onrender.com/vendors/verify-otp", {
+      .post(import.meta.env.VITE_API_URL + "/vendors/verify-otp", {
         order_id: selectedOrder,
         v_id: userId,
         otp: orderOtp,
@@ -230,7 +230,7 @@ const RestaurantDashboard = () => {
   };
   const updateOrderStatus = (newStatus) => {
     axios
-      .post("https://campuseats-ki1c.onrender.com/vendors/assign-order", {
+      .post(import.meta.env.VITE_API_URL + "/vendors/assign-order", {
         vendor_id: userId,
         order_id: selectedOrderId,
         status: newStatus,
@@ -248,7 +248,7 @@ const RestaurantDashboard = () => {
   useEffect(() => {
     if (modalOpen && selectedOrderId) {
       axios
-        .get(`https://campuseats-ki1c.onrender.com/vendors/order-status?order_id=${selectedOrderId}&vendor_id=${userId}`)
+        .get(`${import.meta.env.VITE_API_URL}/vendors/order-status?order_id=${selectedOrderId}&vendor_id=${userId}`)
         .then((response) => {
           setStatus(response.data.status);
           console.log(response.data.status);
@@ -279,7 +279,7 @@ const RestaurantDashboard = () => {
     const fetchVendorStatus = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/vendor-status/${vendor_id}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/vendors/vendor-status/${vendor_id}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -307,7 +307,7 @@ const RestaurantDashboard = () => {
     const newStatus = isOnline ? 0 : 1;
     try {
       setIsLoading(true);
-      const response = await fetch("https://campuseats-ki1c.onrender.com/vendors/update-vendor-status", {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/vendors/update-vendor-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -343,9 +343,10 @@ const RestaurantDashboard = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      if (!userId) return;
       try {
         setlIsLoading(true);
-        const response = await fetch(`https://campuseats-ki1c.onrender.com/vendors/orders/${userId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/vendors/orders/${userId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch orders");
         }
@@ -354,7 +355,7 @@ const RestaurantDashboard = () => {
           ...order,
           image_url: order.image_url
             ? `${order.image_url}` // Prepend backend URL if image exists
-            : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg", // Fallback image
+            : "https://res.cloudinary.com/cloud451752/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg", // Fallback image
         }));
         setOrders(updatedOrders);
         setlIsLoading(false);
@@ -388,7 +389,7 @@ const RestaurantDashboard = () => {
       try {
         setadloading(true);
         const response = await axios.get(
-          "https://campuseats-ki1c.onrender.com/users/profile",
+          import.meta.env.VITE_API_URL + "/users/profile",
           {
             headers: {
               Authorization: token,
@@ -913,7 +914,7 @@ const RestaurantDashboard = () => {
                           <img
                             src={order.image_url
                               ? `${order.image_url}`
-                              : "https://res.cloudinary.com/dsljhnanm/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
+                              : "https://res.cloudinary.com/cloud451752/image/upload/v1738939765/menu_images/c199pic8rjpnosgnayzg.jpg"
                             }
                             alt={order.menu_name}
                             className="w-16 h-16 object-cover rounded-md"

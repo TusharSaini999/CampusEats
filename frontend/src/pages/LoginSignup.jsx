@@ -80,7 +80,7 @@ const LoginSignup = () => {
         navigate("/login");
       } else {
         const { email, password } = formData;
-        const response = await axios.post("https://campuseats-ki1c.onrender.com/users/login", {
+        const response = await axios.post(import.meta.env.VITE_API_URL + "/users/login", {
           email,
           password,
         });
@@ -115,13 +115,13 @@ const LoginSignup = () => {
   const getEndpoint = (userType) => {
     switch (userType) {
       case "vendor":
-        return "https://campuseats-ki1c.onrender.com/vendors/signup-vendor";
+        return import.meta.env.VITE_API_URL + "/vendors/signup-vendor";
       case "delivery_boy":
-        return "https://campuseats-ki1c.onrender.com/delivery/signup-delivery-boy";
+        return import.meta.env.VITE_API_URL + "/delivery/signup-delivery-boy";
       case "college":
-        return "https://campuseats-ki1c.onrender.com/users/signup-college";
+        return import.meta.env.VITE_API_URL + "/users/signup-college";
       default:
-        return "https://campuseats-ki1c.onrender.com/users/signup-customer";
+        return import.meta.env.VITE_API_URL + "/users/signup-customer";
     }
   };
 
