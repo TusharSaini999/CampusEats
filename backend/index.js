@@ -29,6 +29,7 @@ const orderItemsRoute = require("./order_items");
 const categoriesRoute = require("./categories");
 const deliverRoute = require("./deliver");
 const getmap = require("./getlocationmap");
+const chatbotRoute = require("./chatbot");
 
 // Use routes
 app.use("/images", express.static(path.join(__dirname, "./images")));
@@ -41,6 +42,7 @@ app.use("/order_items", orderItemsRoute);
 app.use("/categories", categoriesRoute);
 app.use("/delivery", deliverRoute);
 app.use("/map", getmap);
+app.use("/api/chat", chatbotRoute);
 
 // Start the server
 const PORT = process.env.PORT || 4000;
