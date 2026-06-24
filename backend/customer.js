@@ -192,13 +192,13 @@ router.put('/profile-update', upload.single('image'), async (req, res) => {
 
 
 
-//http://localhost:4000/users/customer-profile-delete:id=
-router.delete("/customer-profile-delete:id", async (req, res) => {
+//http://localhost:4000/users/customer-profile-delete/:id
+router.delete("/customer-profile-delete/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const [response] = await db
       .promise()
-      .query(`DELETE FROM users WHERE id=${id}`);
+      .query(`DELETE FROM users WHERE id=?`, [id]);
     if (response.affectedRows === 0) {
       return res.status(404).json({ message: "Customer profile not found" });
     }

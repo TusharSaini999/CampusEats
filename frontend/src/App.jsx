@@ -9,7 +9,7 @@ import CustomerProfile from "./pages/CustomerProfile";
 import DeliveryTrackingPage from "./pages/delivery";
 import Castmertracking from "./pages/custmer";
 import RestaurantDashboard from "./pages/RestaurantDashbaord";
-import RecipeGenerator from "./pages/RecipeGenerator";
+import Chatbot from "./pages/Chatbot";
 import DeliveryboyDashboard from "./pages/DeliveryboyDashboard";
 import PaymentConfirmation from "./pages/PaymentConfirmation";
 import SearchResults from "./pages/SearchResults";
@@ -29,7 +29,7 @@ function App() {
           <Route path="/login" element={<LoginSignup />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/profile" element={<CustomerProfile />} />
-          <Route path="/recipe-generator" element={<RecipeGenerator />} />
+
           <Route path="/delivery/:customerId" element={<DeliveryTrackingPage />} />
           <Route path="/custmer/:deliveryid" element={<Castmertracking />} />
           <Route path="/delivery-boy-dashboard" element={<DeliveryboyDashboard />} />
@@ -39,6 +39,7 @@ function App() {
           <Route path="/menuvendoer" element={<Owermenu />} />
           <Route path="/order-dilivery/:orderId" element={<Orderaction />} />
         </Routes>
+        <Chatbot />
       </Router>
     </>
   );

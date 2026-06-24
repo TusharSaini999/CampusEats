@@ -9,7 +9,7 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 ### For Students 👨‍🎓
 - **Order Food Anytime**: Browse and order from your favorite campus restaurants and shops.
 - **Real-Time Tracking**: Track your food delivery in real time with an interactive map powered by **Leaflet.js**.
-- **AI Chatbot**: Get assistance with our AI-powered chatbot for queries and recommendations.
+- **Eatsy AI Assistant**: Get instant assistance with Eatsy, our ReAct-powered AI Agent. Eatsy can answer questions, find food, and even place items directly into your cart!
 - **Personalized Recommendations**: Enjoy AI-driven food recommendations based on your preferences.
 
 ### For Admins 💻
@@ -43,7 +43,7 @@ Welcome to **Campus Eats**, a comprehensive food ordering platform designed spec
 - **Leaflet.js**: For real-time interactive maps to track food delivery.
 
 ### AI Integration 🤖
-- AI-powered chatbot for support and smart food recommendations.
+- **Eatsy AI**: A powerful ReAct (Reasoning and Acting) agent built into the platform. Eatsy thinks step-by-step to handle permissions, perform database queries, format beautiful responses, and execute backend actions like adding items to your cart.
 
 ---
 

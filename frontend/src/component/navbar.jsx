@@ -211,7 +211,7 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-6 text-gray-600">
-          <Link to="/recipe-generator">Recipe Generator</Link>
+
           {isLoggedIn ? (
             <>
               {userType !== "vendor" && userType !== "delivery_boy" && (
@@ -304,9 +304,7 @@ const Navbar = () => {
     `}
         >
           <div className="flex flex-col items-start space-y-4 p-4 text-gray-600">
-            <Link to="/recipe-generator" onClick={handleLinkClick}>
-              Recipe Generator
-            </Link>
+
             {isLoggedIn ? (
               <>
                 {userType !== 'vendor' && userType !== 'delivery_boy' && (
