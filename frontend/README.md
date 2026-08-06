@@ -21,5 +21,5 @@ Vite only exposes browser environment variables prefixed with `VITE_`.
 
 ```bash
 VITE_GROQ_API_KEY=your_groq_key
-VITE_API_URL=https://api.compuseats.tusharsaini.tech
+VITE_API_URL=https://api.campuseats.tusharsaini.tech
 ```

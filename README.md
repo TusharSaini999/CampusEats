@@ -2,7 +2,7 @@
 
 Welcome to **Campus Eats**, a comprehensive food ordering platform designed specifically for college campuses! This platform makes it easy for students, local shops, and delivery personnel to interact seamlessly. With an intuitive interface and advanced functionalities, Campus Eats takes campus food ordering to the next level. 🎉
 
-🌍 **Live Demo:** [https://compuseats.tusharsaini.tech](https://compuseats.tusharsaini.tech)
+🌍 **Live Demo:** [https://campuseats.tusharsaini.tech](https://campuseats.tusharsaini.tech)
 
 ---
 
