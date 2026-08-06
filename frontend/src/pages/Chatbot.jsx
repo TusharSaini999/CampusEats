@@ -71,7 +71,7 @@ const Chatbot = () => {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 active:scale-95"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 active:scale-95"
         >
           <FaRobot className="text-3xl" />
         </button>
@@ -84,7 +84,7 @@ const Chatbot = () => {
             initial={{ opacity: 0, y: 50, scale: 0.9, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 w-[350px] sm:w-[400px] h-[550px] max-h-[80vh] bg-white rounded-3xl shadow-2xl shadow-purple-900/20 flex flex-col overflow-hidden border border-gray-100"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[550px] max-h-[80vh] bg-white rounded-3xl shadow-2xl shadow-purple-900/20 flex flex-col overflow-hidden border border-gray-100"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-5 flex items-center justify-between shadow-md relative overflow-hidden">
@@ -124,13 +124,13 @@ const Chatbot = () => {
                     {msg.role === "user" ? <FaUser className="text-sm" /> : <FaRobot className="text-sm" />}
                   </div>
                   <div
-                    className={`p-3 rounded-2xl text-sm ${
+                    className={`p-3 rounded-2xl text-sm overflow-hidden break-words w-full ${
                       msg.role === "user"
                         ? "bg-purple-600 text-white rounded-tr-none"
                         : "bg-white text-gray-800 rounded-tl-none border border-gray-200 shadow-sm"
                     }`}
                   >
-                    <ReactMarkdown className="prose prose-sm max-w-none">
+                    <ReactMarkdown className="prose prose-sm max-w-none break-words">
                       {msg.content}
                     </ReactMarkdown>
                   </div>

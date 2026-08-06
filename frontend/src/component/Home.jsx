@@ -144,7 +144,7 @@ const Home = () => {
           />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl grid-cols-1 items-center gap-16 px-6 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:px-12">
+        <div className="relative z-10 mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl grid-cols-1 items-center gap-10 lg:gap-16 px-4 sm:px-6 py-12 lg:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:px-12">
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -159,7 +159,7 @@ const Home = () => {
               Live campus delivery & tracking
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-5xl font-black leading-[1.1] tracking-tight sm:text-6xl md:text-7xl">
+            <motion.h1 variants={itemVariants} className="text-4xl font-black leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Campus food, <br />
               <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">moving as fast</span> <br />
               as your day.
@@ -199,8 +199,8 @@ const Home = () => {
               </div>
             </motion.form>
 
-            <motion.div variants={itemVariants} className="mt-6 flex flex-wrap items-center gap-3">
-              <span className="text-sm font-medium text-slate-500 flex items-center gap-1">
+            <motion.div variants={itemVariants} className="mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="text-xs sm:text-sm font-medium text-slate-500 flex items-center gap-1 w-full sm:w-auto">
                 <FiTrendingUp className="text-emerald-400" /> Trending:
               </span>
               {filteredSearches.map((item) => (
@@ -223,17 +223,17 @@ const Home = () => {
               ))}
             </motion.div>
 
-            <motion.div variants={itemVariants} className="mt-10 flex flex-wrap gap-4">
+            <motion.div variants={itemVariants} className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-4">
               <Link
                 to="/menu"
-                className="group flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-slate-950 transition-all hover:bg-slate-100 hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] active:scale-95"
+                className="group flex w-full sm:w-auto justify-center items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-slate-950 transition-all hover:bg-slate-100 hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] active:scale-95"
               >
                 <FiShoppingBag className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
                 Order Now
               </Link>
               <Link
                 to="/cart"
-                className="group flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 active:scale-95"
+                className="group flex w-full sm:w-auto justify-center items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 active:scale-95"
               >
                 <FiShoppingCart className="h-4 w-4 text-fuchsia-400 transition-transform group-hover:rotate-12" />
                 View Cart
@@ -247,14 +247,14 @@ const Home = () => {
             transition={{ duration: 0.8, delay: 0.3, type: "spring" }}
             className="grid gap-6 lg:justify-self-end w-full"
           >
-            <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-slate-900/40 p-8 shadow-2xl backdrop-blur-xl">
+            <div className="relative w-full max-w-md mx-auto lg:mx-0 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
               <div className="absolute top-0 right-0 h-32 w-32 -translate-y-1/2 translate-x-1/2 rounded-full bg-violet-500/20 blur-2xl" />
               <div className="absolute bottom-0 left-0 h-32 w-32 translate-y-1/2 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-2xl" />
               
               <div className="relative z-10 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">Campus Live Stats</p>
-                  <h2 className="mt-2 text-3xl font-black text-white">
+                  <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-emerald-400">Campus Live Stats</p>
+                  <h2 className="mt-2 text-2xl sm:text-3xl font-black text-white">
                     {isLoading ? "Loading..." : "Cravings Await 🔥"}
                   </h2>
                 </div>
@@ -264,7 +264,7 @@ const Home = () => {
                 </span>
               </div>
 
-              <div className="relative z-10 mt-8 grid grid-cols-3 gap-4">
+              <div className="relative z-10 mt-6 sm:mt-8 grid grid-cols-3 gap-2 sm:gap-4">
                 {[
                   { label: "Active Vendors", value: isLoading ? "--" : `${activeVendorsCount}` },
                   { label: "Total Dishes", value: isLoading ? "--" : `${menuItems.length}` },
@@ -275,15 +275,15 @@ const Home = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 + (idx * 0.1) }}
                     key={stat.label} 
-                    className="rounded-2xl border border-white/5 bg-white/5 p-4 text-center backdrop-blur-sm transition-colors hover:bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                    className="rounded-2xl border border-white/5 bg-white/5 p-3 sm:p-4 text-center backdrop-blur-sm transition-colors hover:bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
-                    <p className="text-2xl font-black text-white">{stat.value}</p>
-                    <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</p>
+                    <p className="text-xl sm:text-2xl font-black text-white">{stat.value}</p>
+                    <p className="mt-1 sm:mt-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</p>
                   </motion.div>
                 ))}
               </div>
 
-              <div className="relative z-10 mt-8 space-y-4">
+              <div className="relative z-10 mt-6 sm:mt-8 space-y-3 sm:space-y-4">
                 {[
                   { icon: FiList, label: "Browse Full Menu", value: "Explore all items", color: "text-rose-400", bg: "bg-rose-400/10 border-rose-400/20", link: "/menu" },
                   { icon: FiTruck, label: "Track Orders", value: "View your order history", color: "text-amber-400", bg: "bg-amber-400/10 border-amber-400/20", link: "/order-history" },
@@ -299,9 +299,9 @@ const Home = () => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.8 + (idx * 0.1) }}
-                        className="group flex items-center gap-4 rounded-2xl border border-white/5 bg-slate-900/50 p-4 transition-all hover:bg-slate-800/80 hover:border-white/10 mb-4"
+                        className="group flex items-center gap-3 sm:gap-4 rounded-2xl border border-white/5 bg-slate-900/50 p-3 sm:p-4 transition-all hover:bg-slate-800/80 hover:border-white/10 mb-3 sm:mb-4"
                       >
-                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${item.bg} transition-transform group-hover:scale-110`}>
+                        <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl border ${item.bg} transition-transform group-hover:scale-110`}>
                           <Icon className={`h-5 w-5 ${item.color}`} />
                         </div>
                         <div>
@@ -455,7 +455,7 @@ const Home = () => {
             className="relative order-2 lg:order-1"
           >
             <div className="absolute -inset-4 bg-gradient-to-r from-violet-600 to-emerald-600 rounded-3xl blur-2xl opacity-20 animate-pulse"></div>
-            <div className="relative aspect-square md:aspect-video lg:aspect-square overflow-hidden rounded-3xl border border-white/10 bg-slate-900">
+            <div className="relative aspect-square sm:aspect-video lg:aspect-square overflow-hidden rounded-3xl border border-white/10 bg-slate-900">
               <img 
                 src={aboutImage} 
                 alt="Students enjoying food" 
