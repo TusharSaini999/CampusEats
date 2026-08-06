@@ -2,6 +2,7 @@ import "./App.css";
 import Header from "./component/Header";
 import Navbar from "./component/navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./component/ProtectedRoute";
 import Cart from "./pages/Cart";
 import LoginSignup from "./pages/LoginSignup";
 import Menu from "./pages/Menu";
@@ -24,20 +25,20 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Header />} />
-          <Route path="/dashboard" element={<RestaurantDashboard />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route path="/dashboard" element={<ProtectedRoute><RestaurantDashboard /></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
           <Route path="/login" element={<LoginSignup />} />
           <Route path="/menu" element={<Menu />} />
-          <Route path="/profile" element={<CustomerProfile />} />
+          <Route path="/profile" element={<ProtectedRoute><CustomerProfile /></ProtectedRoute>} />
 
           <Route path="/delivery/:customerId" element={<DeliveryTrackingPage />} />
           <Route path="/custmer/:deliveryid" element={<Castmertracking />} />
-          <Route path="/delivery-boy-dashboard" element={<DeliveryboyDashboard />} />
-          <Route path="/confirm-order" element={<PaymentConfirmation />} />
+          <Route path="/delivery-boy-dashboard" element={<ProtectedRoute><DeliveryboyDashboard /></ProtectedRoute>} />
+          <Route path="/confirm-order" element={<ProtectedRoute><PaymentConfirmation /></ProtectedRoute>} />
           <Route path="/search-results" element={<SearchResults />} />
-          <Route path="/order-history" element={<OrderHistory />} />
-          <Route path="/menuvendoer" element={<Owermenu />} />
-          <Route path="/order-dilivery/:orderId" element={<Orderaction />} />
+          <Route path="/order-history" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
+          <Route path="/menuvendoer" element={<ProtectedRoute><Owermenu /></ProtectedRoute>} />
+          <Route path="/order-dilivery/:orderId" element={<ProtectedRoute><Orderaction /></ProtectedRoute>} />
         </Routes>
         <Chatbot />
       </Router>

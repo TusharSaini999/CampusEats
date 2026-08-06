@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const db = require("./db");
+const { verifyToken } = require("./middleware/auth");
 
 //curl -X GET "http://localhost:4000/order_items?user_id=14"
-router.get("/", async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   const { user_id } = req.query;
 
   if (!user_id) {
@@ -36,7 +37,7 @@ router.get("/", async (req, res) => {
 
 
 // Add item to cart
-router.post("/add-to-cart", async (req, res) => {
+router.post("/add-to-cart", verifyToken, async (req, res) => {
   const { order_id, menu_id, quantity, user_id } = req.body; // Extract necessary data
   try {
     // Fetch the menu item details
@@ -89,7 +90,7 @@ router.post("/add-to-cart", async (req, res) => {
 //http://localhost:4000/order_items/update-quantity/14
 //curl -X PUT "http://localhost:4000/order_items/update-quantity/14" -H "Content-Type: application/json" -d "{\"quantity\": 5}"
 
-router.put("/update-quantity/:id", async (req, res) => {
+router.put("/update-quantity/:id", verifyToken, async (req, res) => {
   const { quantity } = req.body;
   const { id } = req.params;
 
@@ -156,7 +157,7 @@ async function checkAvailabilityInMenu(menuId, requestedQuantity) {
 
 
 //http://localhost:4000/order_items/remove-item/id
-router.delete("/remove-item/:id", async (req, res) => {
+router.delete("/remove-item/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
 

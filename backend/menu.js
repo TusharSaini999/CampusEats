@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const db = require("./db");
-const multer = require('multer');
+const multer = require("multer");
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('./cloudinaryConfig');
+const { verifyToken } = require("./middleware/auth");
+
 // Get menu by vendor_id
 // Example: http://localhost:4000/menu/?vendor_id=1
-router.get("/vend", async (req, res) => {
+router.get("/vend", verifyToken, async (req, res) => {
   const { vendor_id } = req.query; // Get vendor_id from query parameter
 
   if (!vendor_id) {
@@ -29,14 +31,14 @@ router.get("/vend", async (req, res) => {
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'menu_images', // Cloudinary folder for storing images
+    folder: 'compuseats/menu', // Cloudinary folder for storing images
     format: async (req, file) => 'png', // Automatically convert images to PNG
   },
 });
 
-const upload = multer({ storage }).single('image_url');
+const upload = multer({ storage });
 
-router.post('/post-menu', upload, async (req, res) => {
+router.post('/post-menu', verifyToken, upload.single('image_url'), async (req, res) => {
   const { vendor_id, name, description, price, category, availability } = req.body;
 
   const image_url = req.file ? req.file.path : null;
@@ -80,7 +82,7 @@ ON
   }
 });
 ////http://localhost:4000/menu/update-menu/:id=1
-router.put("/update-menu/:id", async (req, res) => {
+router.put("/update-menu/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { name, description, price, category, availability } =
     req.body;
@@ -115,7 +117,7 @@ router.put("/update-menu/:id", async (req, res) => {
 });
 
 ////http://localhost:4000/menu/delete-menu/:id=
-router.delete("/delete-menu/:id", async (req, res) => {
+router.delete("/delete-menu/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const query = "UPDATE menu SET `delete` = 1 WHERE id = ?";

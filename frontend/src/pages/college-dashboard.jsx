@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiHome, FiList, FiSettings, FiUser, FiBell, FiSearch, FiMenu, FiX, FiChevronDown } from 'react-icons/fi';
 import { RestaurantModal } from '../component/RestaurantModal';
 import ApplicationList from '../component/ApplicationList';
-import ApplicationDetails from '../component/ApplicationDetails'; // Import the ApplicationDetails component
+import ApplicationDetails from '../component/ApplicationDetails';
+import AlertModal from '../component/AlertModal';
 
 // Dummy data for restaurants
 const initialRestaurants = [
@@ -38,7 +39,8 @@ export default function Dashboard() {
   const [unreadNotifications, setUnreadNotifications] = useState(notifications.filter(n => !n.isRead));
   const [applications, setApplications] = useState(initialApplications);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState(null); // Added state for selected application
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     const filtered = initialRestaurants.filter(restaurant => 
@@ -66,15 +68,13 @@ export default function Dashboard() {
 
   const handleAcceptApplication = (appId) => {
     setApplications(prev => prev.filter(app => app.id !== appId));
-    alert("Application Accepted"); // Replace with a proper toast notification in a production app
-    // Here you would typically make an API call to update the application status
+    setAlertMessage("Application Accepted");
     console.log(`Accepted application ${appId}`);
   };
 
   const handleRejectApplication = (appId) => {
     setApplications(prev => prev.filter(app => app.id !== appId));
-    alert("Application Rejected"); // Replace with a proper toast notification in a production app
-    // Here you would typically make an API call to update the application status
+    setAlertMessage("Application Rejected");
     console.log(`Rejected application ${appId}`);
   };
 
@@ -85,6 +85,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+      <AlertModal message={alertMessage} onClose={() => setAlertMessage("")} />
       {/* Sidebar */}
       <aside
         className={`${
