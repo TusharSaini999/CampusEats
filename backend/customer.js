@@ -212,17 +212,10 @@ router.delete("/customer-profile-delete/:id", verifyToken, async (req, res) => {
 });
 
 //http://localhost:4000/users/profile
-router.get("/profile", (req, res) => {
-  const token = req.headers["authorization"];
-
-  if (!token) {
-    return res.status(403).json({ message: "No token provided" });
-  }
-
+router.get("/profile", verifyToken, (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
-    const userType = decoded.userType;
+    const userId = req.user.id;
+    const userType = req.user.userType;
 
     let query = "";
     if (userType === "vendor") {
@@ -256,7 +249,7 @@ router.get("/profile", (req, res) => {
           phone: user.phone,
           address: user.address,
           businessName: user.business_name || "N/A",
-          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg",
+          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/compuseats/profile/nxoqa16irnfv97prhxna.jpg",
           total_en: user.total_en,
         });
       } else if (userType === "user") {
@@ -267,7 +260,7 @@ router.get("/profile", (req, res) => {
           email: user.email,
           phone: user.phone,
           address: user.address,
-          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg",
+          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/compuseats/profile/nxoqa16irnfv97prhxna.jpg",
         });
       } else if (userType === "delivery_boy") {
         res.json({
@@ -276,7 +269,7 @@ router.get("/profile", (req, res) => {
           name: user.name,
           email: user.email,
           phone: user.moble_no, // Using `moble_no` as per your `delivery` table schema
-          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg",
+          image: user.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/compuseats/profile/nxoqa16irnfv97prhxna.jpg",
           revenue: user.revenue || 0,
           totalDelivery: user.total_delivery || 0,
           createdAt: user.created_at,
@@ -285,7 +278,7 @@ router.get("/profile", (req, res) => {
       }
     });
   } catch (error) {
-    console.error("JWT verification error:", error.message);
+    // Suppress spam: console.error("JWT verification error:", error.message);
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 });

@@ -27,7 +27,7 @@ const verifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.error("JWT verification error:", error.message);
+    // Suppress console.error spam for invalid tokens
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 };

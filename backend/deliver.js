@@ -437,25 +437,16 @@ router.post("/reject-order", verifyToken, async (req, res) => {
 });
 //for on delivery boy
 router.post("/open-to-work", verifyToken, (req, res) => {
-  const token = req.headers["authorization"];
   const { isOpen } = req.body; 
-  if (!token) {
-    return res.status(403).json({ message: "No token provided" });
-  }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
+    const userId = req.user.id;
 
     const query = "UPDATE delivery SET current = ? WHERE id = ?";
     db.query(query, [isOpen ? 1 : 0, userId], (err, result) => {
       if (err) {
-        console.error("Database query error:", err);
-        return res.status(500).json({ message: "Server error" });
-      }
-
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "User not found" });
+        console.error("Error updating Open to Work status:", err);
+        return res.status(500).json({ error: "Failed to update status" });
       }
 
       res.json({
@@ -464,8 +455,7 @@ router.post("/open-to-work", verifyToken, (req, res) => {
       });
     });
   } catch (error) {
-    console.error("JWT verification error:", error.message);
-    return res.status(403).json({ message: "Invalid or expired token" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 // API: Mark order as rejected due to no response from the user
@@ -683,7 +673,10 @@ router.get('/orders_boy_deliver/:orderId', verifyToken, (req, res) => {
     WHERE 
         o.id = ?
     GROUP BY 
-        o.id, v.id
+        o.id, u.id, u.name, u.email, u.phone,
+        v.id, v.name, ov.status, v.address, v.phone, ov.otp,
+        o.total_price, o.payment_status, o.status, o.delivery_address, o.created_at, o.delivery_otp,
+        d.id, d.name, d.email, d.moble_no
     ORDER BY 
         o.created_at DESC;
   `;

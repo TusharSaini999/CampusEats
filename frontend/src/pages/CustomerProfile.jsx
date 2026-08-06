@@ -188,7 +188,7 @@ function ProfilePage() {
       <aside className="w-full md:w-1/4 bg-white shadow-lg flex flex-col items-center py-8 px-4">
         <div className="relative mb-6">
           <img
-            src={formData.imagePreview || `${formData.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/user_profiles/nxoqa16irnfv97prhxna.jpg"}`}
+            src={formData.imagePreview || `${formData.image || "https://res.cloudinary.com/cloud451752/image/upload/v1738933770/compuseats/profile/nxoqa16irnfv97prhxna.jpg"}`}
             alt={formData.name || "User"}
             className="w-24 h-24 rounded-full mb-4"
           />
