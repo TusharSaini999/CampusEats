@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import AlertModal from '../component/AlertModal';
 
 // Function to format numbers in Indian style
 const formatNumber = (num) => {
@@ -36,6 +37,7 @@ const OrderDetails = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [userId, setUserId] = useState("");
   const [otp, setOtp] = useState(""); // State to store OTP input
+  const [alertMessage, setAlertMessage] = useState("");
 
   // Handle OTP input change
   const handleOtpChange = (e) => {
@@ -110,11 +112,11 @@ const OrderDetails = () => {
       });
 
       // Show the generated OTP and update the state
-      alert(`Send Otp secssfully`);
+      setAlertMessage(`Send Otp successfully`);
       setOrder((prevOrder) => ({ ...prevOrder, delivery_otp: response.data.otp }));
     } catch (err) {
       console.error("Error generating OTP:", err.response?.data || err.message);
-      alert("Failed to generate OTP. Please try again.");
+      setAlertMessage("Failed to generate OTP. Please try again.");
     }
   };
 
@@ -122,7 +124,7 @@ const OrderDetails = () => {
   // Handle delivery verification
   const handleVerifyDelivery = async () => {
     if (!otp) {
-      alert("Please enter the OTP to verify delivery.");
+      setAlertMessage("Please enter the OTP to verify delivery.");
       return;
     }
     setLoading(true);
@@ -133,11 +135,11 @@ const OrderDetails = () => {
         deliveryBoyId: userId, // Pass the delivery boy ID
         otp,
       });
-      alert("Order delivered successfully!");
+      setAlertMessage("Order delivered successfully!");
       setOrder((prevOrder) => ({ ...prevOrder, dstatus: "delivered" }));
     } catch (err) {
       console.error("Error verifying delivery:", err.response?.data || err.message);
-      alert(err.response?.data?.error || "Failed to verify delivery.");
+      setAlertMessage(err.response?.data?.error || "Failed to verify delivery.");
     } finally {
       setLoading(false);
     }
@@ -146,7 +148,7 @@ const OrderDetails = () => {
   // Handle order rejection by user
   const handleRejectOrderByUser = async () => {
     if (!otp) {
-      alert("Please enter the OTP to reject the order.");
+      setAlertMessage("Please enter the OTP to reject the order.");
       return;
     }
     setLoading(true);
@@ -156,11 +158,11 @@ const OrderDetails = () => {
         deliveryBoyId: userId, // Pass the delivery boy ID
         otp,
       });
-      alert("Order rejected successfully.");
+      setAlertMessage("Order rejected successfully.");
       setOrder((prevOrder) => ({ ...prevOrder, dstatus: "rejected" }));
     } catch (err) {
       console.error("Error rejecting order:", err.response?.data || err.message);
-      alert(err.response?.data?.error || "Failed to reject order.");
+      setAlertMessage(err.response?.data?.error || "Failed to reject order.");
     } finally {
       setLoading(false);
     }
@@ -174,11 +176,11 @@ const OrderDetails = () => {
         orderId: order.order_id,
         deliveryBoyId: userId, // Pass the delivery boy ID
       });
-      alert("Order rejected due to no response from the user.");
+      setAlertMessage("Order rejected due to no response from the user.");
       setOrder((prevOrder) => ({ ...prevOrder, dstatus: "rejected" }));
     } catch (err) {
       console.error("Error rejecting order due to no response:", err.response?.data || err.message);
-      alert(err.response?.data?.error || "Failed to reject order.");
+      setAlertMessage(err.response?.data?.error || "Failed to reject order.");
     } finally {
       setLoading(false);
     }
@@ -191,11 +193,11 @@ const OrderDetails = () => {
         orderId: order.order_id,
         deliveryBoyId: userId, // Pass the delivery boy ID
       });
-      alert("Order rejected due to no Vender");
+      setAlertMessage("Order rejected due to no Vender");
       setOrder((prevOrder) => ({ ...prevOrder, dstatus: "rejected" }));
     } catch (err) {
       console.error("Error rejecting vender", err.response?.data || err.message);
-      alert(err.response?.data?.error || "Failed to reject order.");
+      setAlertMessage(err.response?.data?.error || "Failed to reject order.");
     } finally {
       setLoading(false);
     }
@@ -203,6 +205,7 @@ const OrderDetails = () => {
 
   return (
     <div className="p-6 space-y-6">
+      <AlertModal message={alertMessage} onClose={() => setAlertMessage("")} />
       <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Order Id {order.order_id}</h2>
 

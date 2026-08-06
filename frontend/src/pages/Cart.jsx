@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import AlertModal from "../component/AlertModal";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -9,6 +10,7 @@ const Cart = () => {
   const [isShippingModalOpen, setShippingModalOpen] = useState(false);
   const [isCheckoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [userId, setUserId] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
@@ -64,7 +66,7 @@ const Cart = () => {
       const data = await response.json();
 
       if (response.status === 400 && data.error) {
-        alert(data.error);
+        setAlertMessage(data.error);
         return;
       }
 
@@ -115,6 +117,7 @@ const Cart = () => {
 
   return (
     <div className="flex flex-col md:flex-row justify-between p-6">
+      <AlertModal message={alertMessage} onClose={() => setAlertMessage("")} />
       {/* Shopping Cart Section */}
       <div className="w-full md:w-2/3">
         <h2 className="text-2xl font-bold mb-6">Shopping Cart</h2>

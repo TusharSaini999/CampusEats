@@ -4,6 +4,7 @@ const db = require("./db"); // Your DB configuration file
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
+const { verifyToken } = require("./middleware/auth");
 
 // Signup for delivery boy
 // POST http://localhost:4000/delivery/signup-delivery-boy
@@ -52,7 +53,7 @@ router.post("/signup-delivery-boy", async (req, res) => {
 // Get all delivery boys data
 // GET http://localhost:4000/delivery/get-all-delivery-boys
 //curl -X GET http://localhost:4000/delivery/get-all-delivery-boys
-router.get("/get-all-delivery-boys", async (req, res) => {
+router.get("/get-all-delivery-boys", verifyToken, async (req, res) => {
   try {
 
     const [deliveryBoys] = await db.promise().query("SELECT * FROM delivery");
@@ -73,7 +74,7 @@ router.get("/get-all-delivery-boys", async (req, res) => {
 // PUT http://localhost:4000/delivery/update-delivery-boy
 
 //curl -X PUT http://localhost:4000/delivery/update-delivery-boy -H "Content-Type: application/json" -d "{\"id\": 1, \"name\": \"John Updated\", \"email\": \"john.updated@example.com\", \"password\": \"newpassword123\", \"mobile_no\": \"9876543210\"}"
-router.put("/update-delivery-boy", async (req, res) => {
+router.put("/update-delivery-boy", verifyToken, async (req, res) => {
   const { id, name, email, password, mobile_no } = req.body;
 
   try {
@@ -119,7 +120,7 @@ router.put("/update-delivery-boy", async (req, res) => {
 // Delete delivery boy profile
 // DELETE http://localhost:4000/delivery/delete-delivery-boy/:id
 //curl -X DELETE http://localhost:4000/delivery/delete-delivery-boy/1
-router.delete("/delete-delivery-boy/:id", async (req, res) => {
+router.delete("/delete-delivery-boy/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -143,7 +144,7 @@ router.delete("/delete-delivery-boy/:id", async (req, res) => {
 // Get all pending orders for delivery boys
 // GET http://localhost:4000/delivery/pending-orders
 //curl -X GET "http://localhost:4000/delivery/pending-orders?deliveryBoyId=2"
-router.get("/pending-orders", async (req, res) => {
+router.get("/pending-orders", verifyToken, async (req, res) => {
   try {
     // Query to fetch pending orders along with customer name
     const [orders] = await db.promise().query(
@@ -177,7 +178,7 @@ router.get("/pending-orders", async (req, res) => {
 // Get all orders for a specific delivery boy (no status filter)
 // GET http://localhost:4000/delivery/all-orders
 // Example usage: curl -X GET "http://localhost:4000/delivery/all-orders?deliveryBoyId=2"
-router.get("/all-orders", async (req, res) => {
+router.get("/all-orders", verifyToken, async (req, res) => {
   try {
     const { deliveryBoyId } = req.query;
 
@@ -215,7 +216,7 @@ router.get("/all-orders", async (req, res) => {
 // POST http://localhost:4000/delivery/accept-order
 //curl -X POST http://localhost:4000/delivery/accept-order -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2}"
 
-router.post("/accept-order", async (req, res) => {
+router.post("/accept-order", verifyToken, async (req, res) => {
   const { orderId, deliveryBoyId } = req.body; // Order ID and Delivery Boy ID from request
 
   try {
@@ -245,7 +246,7 @@ router.post("/accept-order", async (req, res) => {
 //out for delivery
 // Update order status to 'Out for Delivery'
 //http://localhost:4000/delivery/out-for-delivery
-router.post("/out-for-delivery", async (req, res) => {
+router.post("/out-for-delivery", verifyToken, async (req, res) => {
   const { orderId, deliveryBoyId } = req.body; // Order ID and Delivery Boy ID from the request
 
   try {
@@ -271,7 +272,7 @@ router.post("/out-for-delivery", async (req, res) => {
 });
 // GET http://localhost:4000/delivery/search-orders
 // Example: curl -X GET "http://localhost:4000/delivery/search-orders?deliveryBoyId=2&searchQuery=John"
-router.get("/search-orders", async (req, res) => {
+router.get("/search-orders", verifyToken, async (req, res) => {
   try {
     const { deliveryBoyId, searchQuery } = req.query;
 
@@ -324,7 +325,7 @@ router.get("/search-orders", async (req, res) => {
 //http://localhost:4000/delivery/generate-otp
 //curl -X POST http://localhost:4000/delivery/generate-otp -H "Content-Type: application/json" -d "{\"orderId\":1}"
 
-router.post("/generate-otp", async (req, res) => {
+router.post("/generate-otp", verifyToken, async (req, res) => {
   const { orderId } = req.body;
 
   try {
@@ -351,7 +352,7 @@ router.post("/generate-otp", async (req, res) => {
 //http://localhost:4000/delivery/verify-delivery
 //curl -X POST http://localhost:4000/delivery/verify-delivery -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2,\"otp\":910277}"
 
-router.post("/verify-delivery", async (req, res) => {
+router.post("/verify-delivery", verifyToken, async (req, res) => {
   const { orderId, deliveryBoyId, otp } = req.body;
   
   try {
@@ -395,7 +396,7 @@ router.post("/verify-delivery", async (req, res) => {
 //http://localhost:4000/delivery/reject-order
 //curl -X POST http://localhost:4000/delivery/reject-order -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2,\"otp\":910277}"
 
-router.post("/reject-order", async (req, res) => {
+router.post("/reject-order", verifyToken, async (req, res) => {
   const { orderId, deliveryBoyId, otp } = req.body;
 
   try {
@@ -435,7 +436,7 @@ router.post("/reject-order", async (req, res) => {
   }
 });
 //for on delivery boy
-router.post("/open-to-work", (req, res) => {
+router.post("/open-to-work", verifyToken, (req, res) => {
   const token = req.headers["authorization"];
   const { isOpen } = req.body; 
   if (!token) {
@@ -471,7 +472,7 @@ router.post("/open-to-work", (req, res) => {
 //http://localhost:4000/delivery/reject-order-no-response
 //curl -X POST http://localhost:4000/delivery/reject-order-no-response -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2}"
 
-router.post("/reject-order-no-response", async (req, res) => {
+router.post("/reject-order-no-response", verifyToken, async (req, res) => {
   const { orderId, deliveryBoyId } = req.body;
 
   try {
@@ -503,7 +504,7 @@ router.post("/reject-order-no-response", async (req, res) => {
 //http://localhost:4000/delivery/reject-order-vender
 //curl -X POST http://localhost:4000/delivery/reject-order-vender -H "Content-Type: application/json" -d "{\"orderId\":1,\"deliveryBoyId\":2}"
 
-router.post("/reject-order-vender", async (req, res) => {
+router.post("/reject-order-vender", verifyToken, async (req, res) => {
   const { orderId, deliveryBoyId } = req.body;
 
   try {
@@ -535,7 +536,7 @@ router.post("/reject-order-vender", async (req, res) => {
 //http://localhost:4000/delivery/get-otp?orderId=1
 //curl -X GET "http://localhost:4000/delivery/get-otp?orderId=1"
 
-router.get("/get-otp", async (req, res) => {
+router.get("/get-otp", verifyToken, async (req, res) => {
   const { orderId } = req.query;  // Using query parameter for orderId
 
   try {
@@ -568,7 +569,7 @@ router.get("/get-otp", async (req, res) => {
 // API: Get revenue, total deliveries, pending, and rejected orders for a specific delivery boy
 //http://localhost:4000/delivery/delivery-details?deliveryBoyId=1
 //curl -X GET "http://localhost:4000/delivery/delivery-details?deliveryBoyId=2"
-router.get("/delivery-details", async (req, res) => {
+router.get("/delivery-details", verifyToken, async (req, res) => {
   const { deliveryBoyId } = req.query;  // Get deliveryBoyId from the query parameters
 
   try {
@@ -638,7 +639,7 @@ router.get("/delivery-details", async (req, res) => {
 //get order for delivery boy
 //http://localhost:4000/delivery/orders_boy_deliver/48
 // Get order details for delivery boy
-router.get('/orders_boy_deliver/:orderId', (req, res) => {
+router.get('/orders_boy_deliver/:orderId', verifyToken, (req, res) => {
   const orderId = req.params.orderId;
 
   const query = `

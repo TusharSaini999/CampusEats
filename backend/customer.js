@@ -4,6 +4,7 @@ const db = require("./db");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
+const { verifyToken } = require("./middleware/auth");
 const multer = require("multer");
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('./cloudinaryConfig');
@@ -117,7 +118,7 @@ router.post("/login", async (req, res) => {
 
 
 //http://localhost:4000/users/customer-profile/1
-router.get("/customer-profile/:id", async (req, res) => {
+router.get("/customer-profile/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const [response] = await db.promise().query("SELECT * FROM users WHERE id = ?", [id]);
@@ -134,14 +135,14 @@ router.get("/customer-profile/:id", async (req, res) => {
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'user_profiles', // Cloudinary folder for storing images
+    folder: 'compuseats/profile', // Cloudinary folder for storing images
     format: async (req, file) => 'png', // Automatically convert images to PNG
   },
 });
 
 const upload = multer({ storage });
 
-router.put('/profile-update', upload.single('image'), async (req, res) => {
+router.put('/profile-update', verifyToken, upload.single('image'), async (req, res) => {
   const { id, name, phone, address, currentPassword, userType } = req.body;
 
   if (!id || !userType) {
@@ -193,7 +194,7 @@ router.put('/profile-update', upload.single('image'), async (req, res) => {
 
 
 //http://localhost:4000/users/customer-profile-delete/:id
-router.delete("/customer-profile-delete/:id", async (req, res) => {
+router.delete("/customer-profile-delete/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const [response] = await db

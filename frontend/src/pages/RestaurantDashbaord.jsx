@@ -4,6 +4,7 @@ import { FaSearch } from "react-icons/fa";
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import AlertModal from "../component/AlertModal";
 
 const RestaurantDashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -19,6 +20,7 @@ const RestaurantDashboard = () => {
   const [orderId, setOrderId] = useState('');
   const [result, setResult] = useState([]);
   const [error, setError] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderOtp, setOrderOtp] = useState("");
   const [isOtpGenerated, setIsOtpGenerated] = useState(false);
@@ -172,7 +174,7 @@ const RestaurantDashboard = () => {
       })
       .then((response) => {
         setErrorMessage("");
-        alert("Order completed successfully!");
+        setAlertMessage("Order completed successfully!");
         handleCloseModal(); // Close modal after success
       })
       .catch((error) => {
@@ -326,11 +328,11 @@ const RestaurantDashboard = () => {
         setIsLoading(false);
       } else {
         console.error("Error updating status:", data.error);
-        alert("Failed to update vendor status. Try again.");
+        setAlertMessage("Failed to update vendor status. Try again.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while updating the status.");
+      setAlertMessage("An error occurred while updating the status.");
     }
   }
   useEffect(() => {
@@ -429,6 +431,7 @@ const RestaurantDashboard = () => {
 
   return (
     <div className="flex h-full flex-col lg:flex-row">
+      <AlertModal message={alertMessage} onClose={() => setAlertMessage("")} />
       {/* Sidebar */}
       <aside className="w-full lg:w-1/5 bg-gray-50 text-black flex flex-col">
         <div className="p-4 border-b border-gray-700">

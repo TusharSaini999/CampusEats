@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const db = require("./db");
+const { verifyToken } = require("./middleware/auth");
 
 // API to create an order and update order_items
 //curl -X POST "http://localhost:4000/orders/create-order" -H "Content-Type: application/json" -d "{\"user_id\": 14, \"total_price\": 100.50, \"delivery_address\": \"123 Main St, City, Country\", \"customer_latitude\": 40.7128, \"customer_longitude\": -74.0060, \"payment_status\": \"success\"}"
 
 
-router.post("/create-order", async (req, res) => {
+router.post("/create-order", verifyToken, async (req, res) => {
   const { user_id, total_price, delivery_address, customer_latitude, customer_longitude, payment_status } = req.body;
 
   if (!user_id || !total_price || !delivery_address || payment_status === undefined) {
@@ -80,7 +81,7 @@ router.post("/create-order", async (req, res) => {
 //total price
 //http://localhost:4000/orders/total-price
 // Use POST to handle the request
-router.post("/total-price", async (req, res) => {
+router.post("/total-price", verifyToken, async (req, res) => {
   const userId = req.body.user_id; 
 
   if (!userId) {
@@ -112,7 +113,7 @@ router.post("/total-price", async (req, res) => {
 
 // Example Node.js/Express route
 //http://localhost:4000/orders/history
-router.post("/history", async (req, res) => {
+router.post("/history", verifyToken, async (req, res) => {
   const { user_id } = req.body;
   
   try {

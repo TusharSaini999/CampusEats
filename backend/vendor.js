@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const db = require("./db");
 const router = express.Router();
+const { verifyToken } = require("./middleware/auth");
 const crypto = require('crypto');
 //Vendor signup
 //http://localhost:4000/vendors/signup-vendor
@@ -33,7 +34,7 @@ router.post("/signup-vendor", async (req, res) => {
 });
 
 //http://localhost:4000/vendors/vendor-profile/1
-router.get("/vendor-profile/:id", async (req, res) => {
+router.get("/vendor-profile/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   try {
     const response = await db
@@ -46,7 +47,7 @@ router.get("/vendor-profile/:id", async (req, res) => {
 });
 
 //http://localhost:4000/vendors/vendor-profile-update:id=
-router.put("/vendor-profile-update:id", async (req, res) => {
+router.put("/vendor-profile-update:id", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { name, password, phone, address } = req.body;
   try {
@@ -68,7 +69,7 @@ router.put("/vendor-profile-update:id", async (req, res) => {
 });
 // Delete Vendor Profile API
 //http://localhost:4000/vendors/vendor-profile-delete:id=1
-router.delete("/vendor-profile-delete/:id", async (req, res) => {
+router.delete("/vendor-profile-delete/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -94,7 +95,7 @@ router.delete("/vendor-profile-delete/:id", async (req, res) => {
 //http://localhost:4000/vendors/update-vendor-status
 //curl -X POST http://localhost:4000/vendors/update-vendor-status -H "Content-Type: application/json" -d "{\"vendorId\":1,\"current\":1}"
 
-router.post('/update-vendor-status', (req, res) => {
+router.post('/update-vendor-status', verifyToken, (req, res) => {
   const { vendorId, current } = req.body;
 
   // Validate input
@@ -122,7 +123,7 @@ router.post('/update-vendor-status', (req, res) => {
 
 // Express endpoint to get vendor status
 //get the vendor status
-router.get('/vendor-status/:vendorId', (req, res) => {
+router.get('/vendor-status/:vendorId', verifyToken, (req, res) => {
   const { vendorId } = req.params;
 
   // SQL query to get the current status of the vendor
@@ -148,7 +149,7 @@ router.get('/vendor-status/:vendorId', (req, res) => {
 //GET http://localhost:4000/vendors/orders/{vendorId}
 //curl -X GET "http://localhost:4000/vendors/orders/21" -H "Content-Type: application/json"
 
-router.get('/orders/:vendorId', (req, res) => {
+router.get('/orders/:vendorId', verifyToken, (req, res) => {
   const vendorId = req.params.vendorId;
 
   // SQL query to fetch order details
@@ -201,7 +202,7 @@ router.get('/orders/:vendorId', (req, res) => {
 // Order taken by Vendor
 // Endpoint: http://localhost:4000/vendors/assign-order
 
-router.post('/assign-order', (req, res) => {
+router.post('/assign-order', verifyToken, (req, res) => {
   const { vendor_id, order_id, status, message } = req.body;
 
   // Step 1: Validate Inputs
@@ -295,7 +296,7 @@ router.post('/assign-order', (req, res) => {
 // Endpoint to fetch the current status of an order for a vendor
 //http://localhost:4000/vendors/order-status
 // Fetch order status
-router.get('/order-status', (req, res) => {
+router.get('/order-status', verifyToken, (req, res) => {
   const { order_id, vendor_id } = req.query;
 
   if (!order_id || !vendor_id) {
@@ -329,7 +330,7 @@ router.get('/order-status', (req, res) => {
 
 //seacrch on order using order id
 //curl -X GET "http://localhost:4000/vendors/search-orders/21?orderId=34" -H "Content-Type: application/json"
-router.get('/search-orders/:vendorId', (req, res) => {
+router.get('/search-orders/:vendorId', verifyToken, (req, res) => {
   const vendorId = req.params.vendorId;
   const orderId = req.query.orderId; 
 
@@ -392,7 +393,7 @@ const generateOTP = () => {
   return otp;
 };
 
-router.post('/generate-otp', (req, res) => {
+router.post('/generate-otp', verifyToken, (req, res) => {
   const { order_id, v_id } = req.body;
   if (!order_id || !v_id) {
     return res.status(400).json({ message: 'order_id and v_id are required' });
@@ -418,7 +419,7 @@ router.post('/generate-otp', (req, res) => {
 //otp verfy and close the order
 //curl -X POST http://localhost:4000/vendors/verify-otp -H "Content-Type: application/json" -d "{"order_id":12, "v_id":21, "otp":787141}"
 
-router.post('/verify-otp', (req, res) => {
+router.post('/verify-otp', verifyToken, (req, res) => {
   const { order_id, v_id, otp } = req.body;  // Get order_id, vendor_id, and otp from request body
   if (!order_id || !v_id || !otp) {
     return res.status(400).json({ message: 'order_id, v_id, and otp are required' });
@@ -509,7 +510,7 @@ router.post('/verify-otp', (req, res) => {
 });
 
 //check otp
-router.post('/check-otp-status', (req, res) => {
+router.post('/check-otp-status', verifyToken, (req, res) => {
   const { order_id, v_id } = req.body;
 
   // Validate input
